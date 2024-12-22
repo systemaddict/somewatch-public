@@ -54,22 +54,17 @@
             background: #2563eb;
         }
 
-        .connect-button:disabled {
-            background: #64748b;
-            cursor: not-allowed;
-        }
-
         .stats {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
             margin-bottom: 2rem;
             font-size: 1.1rem;
         }
 
         .stat-box {
             background: #1e293b;
-            padding: 1rem 2rem;
+            padding: 1rem;
             border-radius: 12px;
             text-align: center;
         }
@@ -107,6 +102,7 @@
 
         .activity-content {
             flex-grow: 1;
+            word-break: break-word;
         }
 
         .activity-time {
@@ -149,22 +145,6 @@
         .activity-feed::-webkit-scrollbar-thumb:hover {
             background: #64748b;
         }
-
-        .test-data-button {
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            margin-left: 1rem;
-            transition: background 0.2s;
-        }
-
-        .test-data-button:hover {
-            background: #047857;
-        }
     </style>
 </head>
 <body>
@@ -177,19 +157,10 @@
             <div id="status-message">Disconnected</div>
             <div style="margin-top: 1rem;">
                 <button id="connect-button" class="connect-button">Connect to Stream</button>
-                <button id="test-data-button" class="test-data-button">Generate Test Data</button>
             </div>
         </div>
         
-        <div class="stats">
-            <div class="stat-box">
-                <div class="stat-value" id="post-count">0</div>
-                <div>Posts</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-value" id="like-count">0</div>
-                <div>Likes</div>
-            </div>
+        <div class="stats" id="stats">
             <div class="stat-box">
                 <div class="stat-value" id="events-per-minute">0</div>
                 <div>Events/min</div>
@@ -201,41 +172,66 @@
 
     <script>
         let ws = null;
-        let postCount = 0;
-        let likeCount = 0;
-        let eventCount = 0;
         let lastMinuteEvents = [];
         let isConnected = false;
-        let testDataInterval = null;
+        let collectionCounts = new Map();
+        let emojis = new Map();
 
         const connectButton = document.getElementById('connect-button');
         const statusMessage = document.getElementById('status-message');
-        const testDataButton = document.getElementById('test-data-button');
+        const statsContainer = document.getElementById('stats');
 
         function updateConnectionStatus(connected, message) {
             isConnected = connected;
             statusMessage.textContent = message;
             statusMessage.className = connected ? 'status-connected' : 'status-disconnected';
             connectButton.textContent = connected ? 'Disconnect' : 'Connect to Stream';
-            testDataButton.disabled = connected;
+        }
+
+        function getCollectionDisplayName(collection) {
+            return collection.split('.').pop();
         }
 
         function updateStats() {
-            document.getElementById('post-count').textContent = postCount;
-            document.getElementById('like-count').textContent = likeCount;
-            
+            // Update events per minute
             const now = Date.now();
             lastMinuteEvents = lastMinuteEvents.filter(time => now - time < 60000);
             document.getElementById('events-per-minute').textContent = lastMinuteEvents.length;
         }
 
-        function addActivityItem(content, icon) {
+        function addOrUpdateCollectionStat(collection) {
+            const count = (collectionCounts.get(collection) || 0) + 1;
+            collectionCounts.set(collection, count);
+            
+            const displayName = getCollectionDisplayName(collection);
+            const statId = `stat-${collection}`;
+            
+            let statBox = document.getElementById(statId);
+            if (!statBox) {
+                // Create new stat box if it doesn't exist
+                const emoji = emojis.get(collection) || '📊';
+                statBox = document.createElement('div');
+                statBox.className = 'stat-box';
+                statBox.id = statId;
+                statBox.innerHTML = `
+                    <div class="stat-value" id="count-${collection}">0</div>
+                    <div>${emoji} ${displayName}</div>
+                `;
+                statsContainer.appendChild(statBox);
+            }
+            
+            document.getElementById(`count-${collection}`).textContent = count;
+        }
+
+        function addActivityItem(content, collection) {
             const feed = document.getElementById('activity-feed');
             const item = document.createElement('div');
             item.className = 'activity-item';
             
+            const emoji = emojis.get(collection) || '📊';
+            
             item.innerHTML = `
-                <div class="activity-icon">${icon}</div>
+                <div class="activity-icon">${emoji}</div>
                 <div class="activity-content">
                     ${content}
                     <div class="activity-time">${new Date().toLocaleTimeString()}</div>
@@ -276,13 +272,26 @@
                     const data = JSON.parse(event.data);
                     lastMinuteEvents.push(Date.now());
                     
-                    if (data.kind === 'commit') {
+                    if (data.kind === 'commit' && data.commit.collection) {
+                        const collection = data.commit.collection;
                         const commit = data.commit;
                         
-                        if (commit.collection === 'app.bsky.feed.post') {
-                            postCount++;
-                            let content = `<strong>${formatDID(data.did)}</strong> posted`;
-                            
+                        // Set emoji for new collection types
+                        if (!emojis.has(collection)) {
+                            // Add more emoji mappings as needed
+                            if (collection.includes('post')) emojis.set(collection, '📝');
+                            else if (collection.includes('like')) emojis.set(collection, '❤️');
+                            else if (collection.includes('follow')) emojis.set(collection, '👥');
+                            else if (collection.includes('repost')) emojis.set(collection, '🔄');
+                            else emojis.set(collection, '📊');
+                        }
+
+                        addOrUpdateCollectionStat(collection);
+                        
+                        let content = `<strong>${formatDID(data.did)}</strong> ${getCollectionDisplayName(collection)}`;
+                        
+                        // Add record details if available
+                        if (commit.record) {
                             if (commit.record.text) {
                                 content += `<br>${truncateString(commit.record.text, 100)}`;
                             }
@@ -290,14 +299,9 @@
                             if (commit.record.embed && commit.record.embed.$type === 'app.bsky.embed.images') {
                                 content += `<br><img class="post-image" src="/api/placeholder/200/200" alt="Post image">`;
                             }
-                            
-                            addActivityItem(content, '📝');
-                        } else if (commit.collection === 'app.bsky.feed.like') {
-                            likeCount++;
-                            const content = `<strong>${formatDID(data.did)}</strong> liked a post`;
-                            addActivityItem(content, '❤️');
                         }
                         
+                        addActivityItem(content, collection);
                         updateStats();
                     }
                 };
@@ -317,56 +321,7 @@
             }
         }
 
-        function generateTestData() {
-            if (testDataInterval) {
-                clearInterval(testDataInterval);
-                testDataInterval = null;
-                testDataButton.textContent = 'Generate Test Data';
-                return;
-            }
-
-            testDataButton.textContent = 'Stop Test Data';
-            
-            function generateRandomActivity() {
-                const dids = [
-                    'did:plc:random1',
-                    'did:plc:random2',
-                    'did:plc:random3',
-                    'did:plc:random4'
-                ];
-                
-                const messages = [
-                    'Just posted something cool! #bluesky',
-                    'Check out this amazing view',
-                    'Having a great day',
-                    'Working on something exciting',
-                    'Hello Bluesky!'
-                ];
-
-                const isPost = Math.random() > 0.5;
-                const did = dids[Math.floor(Math.random() * dids.length)];
-
-                if (isPost) {
-                    postCount++;
-                    const message = messages[Math.floor(Math.random() * messages.length)];
-                    const content = `<strong>${formatDID(did)}</strong> posted<br>${message}`;
-                    addActivityItem(content, '📝');
-                } else {
-                    likeCount++;
-                    const content = `<strong>${formatDID(did)}</strong> liked a post`;
-                    addActivityItem(content, '❤️');
-                }
-
-                lastMinuteEvents.push(Date.now());
-                updateStats();
-            }
-
-            testDataInterval = setInterval(generateRandomActivity, 2000);
-            generateRandomActivity(); // Generate first item immediately
-        }
-
         connectButton.addEventListener('click', connectWebSocket);
-        testDataButton.addEventListener('click', generateTestData);
 
         // Update stats every second
         setInterval(updateStats, 1000);
