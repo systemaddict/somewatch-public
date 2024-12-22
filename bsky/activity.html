@@ -278,11 +278,20 @@
                         
                         // Set emoji for new collection types
                         if (!emojis.has(collection)) {
-                            // Add more emoji mappings as needed
+                            // Specific mappings for all known types
                             if (collection.includes('post')) emojis.set(collection, '📝');
                             else if (collection.includes('like')) emojis.set(collection, '❤️');
                             else if (collection.includes('follow')) emojis.set(collection, '👥');
                             else if (collection.includes('repost')) emojis.set(collection, '🔄');
+                            else if (collection.includes('block')) emojis.set(collection, '🚫');
+                            else if (collection.includes('profile')) emojis.set(collection, '👤');
+                            else if (collection.includes('listitem')) emojis.set(collection, '📋');
+                            else if (collection.includes('postgate')) emojis.set(collection, '🚪');
+                            else if (collection.includes('threadgate')) emojis.set(collection, '🧵');
+                            else if (collection.includes('mastodon')) emojis.set(collection, '🐘');
+                            else if (collection.includes('starterpack')) emojis.set(collection, '🎁');
+                            else if (collection.includes('generator')) emojis.set(collection, '⚡');
+                            else if (collection.includes('declaration')) emojis.set(collection, '📜');
                             else emojis.set(collection, '📊');
                         }
 
@@ -292,6 +301,31 @@
                         
                         // Add record details if available
                         if (commit.record) {
+                            // Track Danish posts
+                            if (collection.includes('post') && commit.record.langs && commit.record.langs.includes('da')) {
+                                const danishCount = (collectionCounts.get('danish-posts') || 0) + 1;
+                                collectionCounts.set('danish-posts', danishCount);
+                                
+                                // Update or create Danish counter
+                                const danishStatId = 'stat-danish-posts';
+                                let danishStat = document.getElementById(danishStatId);
+                                if (!danishStat) {
+                                    const postStatBox = document.getElementById(`stat-${collection}`);
+                                    if (postStatBox) {
+                                        const subStat = document.createElement('div');
+                                        subStat.id = danishStatId;
+                                        subStat.style.fontSize = '0.8em';
+                                        subStat.style.color = '#94a3b8';
+                                        subStat.style.marginTop = '0.5rem';
+                                        postStatBox.appendChild(subStat);
+                                    }
+                                }
+                                const danishElement = document.getElementById(danishStatId);
+                                if (danishElement) {
+                                    danishElement.textContent = `🇩🇰 Danish: ${danishCount}`;
+                                }
+                            }
+
                             if (commit.record.text) {
                                 content += `<br>${truncateString(commit.record.text, 100)}`;
                             }
