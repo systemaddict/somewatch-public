@@ -145,6 +145,30 @@
         .activity-feed::-webkit-scrollbar-thumb:hover {
             background: #64748b;
         }
+
+        .language-filter {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .language-select {
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .language-select:hover {
+            border-color: #60a5fa;
+        }
+
+        .language-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
     </style>
     <script defer data-domain="pages.somewatch.com" src="https://tools-plausible.nwrasl.easypanel.host/js/script.js"></script>
 </head>
@@ -161,6 +185,23 @@
             </div>
         </div>
         
+        <div class="language-filter">
+            <select id="language-filter" class="language-select">
+                <option value="all">All Languages</option>
+                <option value="da">Danish</option>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="nl">Dutch</option>
+                <option value="pt">Portuguese</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="zh">Chinese</option>
+            </select>
+        </div>
+
         <div class="stats" id="stats">
             <div class="stat-box">
                 <div class="stat-value" id="events-per-minute">0</div>
@@ -177,6 +218,7 @@
         let isConnected = false;
         let collectionCounts = new Map();
         let emojis = new Map();
+        let selectedLanguage = 'all';
 
         const connectButton = document.getElementById('connect-button');
         const statusMessage = document.getElementById('status-message');
@@ -224,7 +266,7 @@
             document.getElementById(`count-${collection}`).textContent = count;
         }
 
-        function addActivityItem(content, collection) {
+        function addActivityItem(content, collection, langs) {
             const feed = document.getElementById('activity-feed');
             const item = document.createElement('div');
             item.className = 'activity-item';
@@ -239,7 +281,10 @@
                 </div>
             `;
             
-            feed.insertBefore(item, feed.firstChild);
+            // Only add the item if it matches the selected language filter
+            if (selectedLanguage === 'all' || (langs && langs.includes(selectedLanguage))) {
+                feed.insertBefore(item, feed.firstChild);
+            }
             
             if (feed.children.length > 100) {
                 feed.removeChild(feed.lastChild);
@@ -336,7 +381,7 @@
                             }
                         }
                         
-                        addActivityItem(content, collection);
+                        addActivityItem(content, collection, commit.record?.langs);
                         updateStats();
                     }
                 };
@@ -357,6 +402,13 @@
         }
 
         connectButton.addEventListener('click', connectWebSocket);
+
+        // Language filter event listener
+        document.getElementById('language-filter').addEventListener('change', function(e) {
+            selectedLanguage = e.target.value;
+            // Clear the feed when language changes
+            document.getElementById('activity-feed').innerHTML = '';
+        });
 
         // Update stats every second
         setInterval(updateStats, 1000);
