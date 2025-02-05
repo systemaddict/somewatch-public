@@ -31,7 +31,12 @@
 </head>
 <body>
     <div class="video-container">
-        <script src="https://cdn.jwplayer.com/players/gYOzRzpt-OHmOmesR.js"></script>
+        <div id="myElement">This text will be replaced with a player.</div>
+        <script>
+            jwplayer("myElement").setup({
+                "playlist": "https://cdn.jwplayer.com/v2/media/hWF9vG66"
+            });
+        </script>
     </div>
 </body>
 </html>
