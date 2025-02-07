@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
     <channel>
-        <title>TVBRN-1</title>
+        <title>TVBRN-2</title>
         <link>https://pages.somewatch.com/tests/mrss-1.xml</link>
         <description>First BRN Test</description>
         <language>en-us</language>
@@ -11,7 +11,7 @@
             <title>NY - Mellem os - Patrick Hult (06.02.2025)</title>
             <description>Du kender ham måske fra vinbaren Razapaz i Rønne. Der finder du ham stadigvæk, men nu har han også kastet sin kærlighed på keramik. Han drømmer om at dele det med andre og åbner derfor et kæmpe kreativt værksted, hvor alle kan komme og være med. Det er selvfølgelig Patrick Hult, du kan møde i dette afsnit af Mellem os.</description>
             <pubDate>Fri, 07 Feb 2025 10:00:00 +0000</pubDate>
-            <guid isPermaLink="false">external-ID-2</guid>
+            <guid isPermaLink="false">external-ID-3</guid>
 
             <media:content 
                 url="https://content.tv2bornholm.dk/Content/cajotest.mp4"
