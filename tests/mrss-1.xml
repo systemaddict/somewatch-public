@@ -11,7 +11,7 @@
             <title>Mellem os - Patrick Hult (06.02.2025)</title>
             <description>Du kender ham måske fra vinbaren Razapaz i Rønne. Der finder du ham stadigvæk, men nu har han også kastet sin kærlighed på keramik. Han drømmer om at dele det med andre og åbner derfor et kæmpe kreativt værksted, hvor alle kan komme og være med. Det er selvfølgelig Patrick Hult, du kan møde i dette afsnit af Mellem os.</description>
             <pubDate>Fri, 07 Feb 2025 10:00:00 +0000</pubDate>
-            <guid isPermaLink="false">external-ID-1</guid>
+            <guid isPermaLink="false">external-ID-2</guid>
 
             <media:content 
                 url="https://content.tv2bornholm.dk/Content/cajotest.mp4"
@@ -21,8 +21,11 @@
 
             <media:title type="plain">Mellem os - Vivian Nielsen og Siff Vintersol (05.02.2025)</media:title>
             <media:description type="plain">Du kender ham måske fra vinbaren Razapaz i Rønne. Der finder du ham stadigvæk, men nu har han også kastet sin kærlighed på keramik. Han drømmer om at dele det med andre og åbner derfor et kæmpe kreativt værksted, hvor alle kan komme og være med. Det er selvfølgelig Patrick Hult, du kan møde i dette afsnit af Mellem os.</media:description>
-            <media:thumbnail url="https://placehold.co/600x400" />
-            <media:category>kategori-where?</media:category>
+            <media:thumbnails>
+                <media:thumbnail url="https://placehold.co/600x400" width="600" height="400" />
+            </media:thumbnails>
+            <media:category>Entertainment</media:category>
+            <media:tags>keramik, kreativitet, vinbar</media:tags>
         </item>
     </channel>
 </rss>
