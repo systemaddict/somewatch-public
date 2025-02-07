@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+    <channel>
+        <title>TVBRN-3</title>
+        <link>https://pages.somewatch.com/tests/mrss-1.xml</link>
+        <description>First BRN Test</description>
+        <language>en-us</language>
+        <pubDate>Fri, 07 Feb 2025 12:00:00 +0000</pubDate>
+
+        <item>
+            <title>NY3 - Mellem os - Patrick Hult (06.02.2025)</title>
+            <description>Du kender ham måske fra vinbaren Razapaz i Rønne. Der finder du ham stadigvæk, men nu har han også kastet sin kærlighed på keramik. Han drømmer om at dele det med andre og åbner derfor et kæmpe kreativt værksted, hvor alle kan komme og være med. Det er selvfølgelig Patrick Hult, du kan møde i dette afsnit af Mellem os.</description>
+            <pubDate>Fri, 07 Feb 2025 15:00:00 +0000</pubDate>
+            <guid isPermaLink="false">external-ID-4</guid>
+
+            <media:content 
+                url="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                type="video/mp4" 
+                medium="video"
+            />
+
+            <media:title type="plain">Mellem os - Vivian Nielsen og Siff Vintersol (05.02.2025)</media:title>
+            <media:description type="plain">Du kender ham måske fra vinbaren Razapaz i Rønne. Der finder du ham stadigvæk, men nu har han også kastet sin kærlighed på keramik. Han drømmer om at dele det med andre og åbner derfor et kæmpe kreativt værksted, hvor alle kan komme og være med. Det er selvfølgelig Patrick Hult, du kan møde i dette afsnit af Mellem os.</media:description>
+            <media:thumbnails>
+                <media:thumbnail url="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" />
+            </media:thumbnails>
+            <media:category>Entertainment</media:category>
+            <media:tags>keramik, kreativitet, vinbar</media:tags>
+        </item>
+    </channel>
+</rss>
