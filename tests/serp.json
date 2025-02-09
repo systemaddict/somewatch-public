@@ -1,0 +1,155 @@
+// 20250209104446
+// https://serpapi.com/search.json?engine=google&q=gr%C3%B8nland&location=Denmark&google_domain=google.dk&gl=dk&hl=da&tbm=nws&api_key=6bee564c51ceadff8454ed7400988bae85c39687a7eca22a5639d96d6aded39d
+
+{
+  "search_metadata": {
+    "id": "67a873454d29c1645f24cd30",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/bc6a94e3d03342e0/67a873454d29c1645f24cd30.json",
+    "created_at": "2025-02-09 09:20:05 UTC",
+    "processed_at": "2025-02-09 09:20:05 UTC",
+    "google_url": "https://www.google.dk/search?q=gr%C3%B8nland&oq=gr%C3%B8nland&uule=w+CAIQICIHRGVubWFyaw&hl=da&gl=dk&tbm=nws&sourceid=chrome&ie=UTF-8",
+    "raw_html_file": "https://serpapi.com/searches/bc6a94e3d03342e0/67a873454d29c1645f24cd30.html",
+    "total_time_taken": 2.09
+  },
+  "search_parameters": {
+    "engine": "google",
+    "q": "grønland",
+    "location_requested": "Denmark",
+    "location_used": "Denmark",
+    "google_domain": "google.dk",
+    "hl": "da",
+    "gl": "dk",
+    "device": "desktop",
+    "tbm": "nws"
+  },
+  "search_information": {
+    "query_displayed": "grønland",
+    "total_results": 10100,
+    "time_taken_displayed": 0.25,
+    "news_results_state": "Results for exact spelling"
+  },
+  "news_results": [
+    {
+      "position": 1,
+      "link": "https://www.dr.dk/nyheder/indland/i-130-aar-hev-danske-firmaer-unikt-mineral-op-af-groenlands-undergrund-og-skabte-en",
+      "title": "I 130 år hev danske firmaer unikt mineral op af Grønlands undergrund og skabte en milliardforretning i Danmark",
+      "source": "DR.dk",
+      "date": "for 3 timer siden",
+      "snippet": "En DR Dokumentar finder nye oplysninger om værdien af den kryolit, som staten og danske virksomheder i årevis udvandt af den grønlandske...",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b23c9db4616f2f8944df1bcc5c421a4dae4479a14b4619b0063.jpeg"
+    },
+    {
+      "position": 2,
+      "link": "https://nyheder.tv2.dk/politik/2025-02-07-opsigtsvaekkende-plan-for-groenland-er-hoejst-usandsynlig-siger-ekspert",
+      "title": "Opsigtsvækkende plan for Grønland er \"højst usandsynlig\", siger ekspert",
+      "source": "tv2.dk",
+      "date": "1 dag siden",
+      "snippet": "Hvis Grønland aktiverer den særlige paragraf, kan det blive svært for Siumut at nå en folkeafstemning til tiden, mener professor emeritus.",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b2373df9908055f2487970de1d6917c7566539f3d8c58349fbd.jpeg"
+    },
+    {
+      "position": 3,
+      "link": "https://www.bt.dk/debat/bt-mener-det-bedste-som-er-sket-for-groenland?gaa_at=eafs&gaa_n=AerBZYPRKOPUTOLjVuDD3OdhOsNn33guVto0hYe8aIzDXJZNBAJeVFf-H9ye&gaa_ts=67a876ca&gaa_sig=OF-KB_lMWkQyMrCnkN16krz5F9vzYvO0t03_drwnAI1fJh4ulSnB8EBm28CjC45PTRwqETKMDGg3RgrhaZ5J6w%3D%3D",
+      "title": "B.T. mener: Det bedste, som er sket for Grønland | BT Debat - www.bt.dk",
+      "source": "BT",
+      "date": "1 dag siden",
+      "snippet": "Man skal aldrig være bleg for at indrømme en fejl. Så det gør jeg nu. Jeg har begået en fejl. Min fejl består i, at jeg til dels har købt...",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b237ada81173c09e42cb7aaea6648c8b6cfba0918bbabc7ff35.jpeg"
+    },
+    {
+      "position": 4,
+      "link": "https://www.dr.dk/nyheder/indland/groenlands-regeringsleder-billedet-boer-vendes-til-hvad-ville-danmark-have-vaeret",
+      "title": "Grønlands regeringsleder: Billedet bør vendes til 'hvad ville Danmark have været uden Grønland?'",
+      "source": "DR.dk",
+      "date": "for 54 minutter siden",
+      "snippet": "Det blev brudt i den sydvestgrønlandske undergrund helt tilbage fra 1854 og frem til 1987. Nye oplysninger om værdien af mineralet kryolit,...",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b23af1ac16dca1c29d5e26393007e624b733641db1793ad03d6.jpeg"
+    },
+    {
+      "position": 5,
+      "link": "https://www.dr.dk/nyheder/politik/live-storpolitisk-trekantsdrama-mellem-groenland-usa-og-danmark",
+      "title": "LIVE: Storpolitisk trekantsdrama mellem Grønland, USA og Danmark",
+      "source": "DR.dk",
+      "date": "for 16 timer siden",
+      "snippet": "Grønland har for nylig forbudt anonyme og udenlandske donationer til partier og politiker forud for valget den 11. marts. ... Formanden for den...",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b235e010be8f6f16cc9d1d123a78a31ad9bd5c8c663cf00e669.jpeg"
+    },
+    {
+      "position": 6,
+      "link": "https://nyheder.tv2.dk/samfund/2025-02-06-paa-groenlands-sygehuse-er-vikarer-afgoerende-vi-er-noedt-til-at-have-hjaelp-udefra-siger-overlaege",
+      "title": "På Grønlands sygehuse er vikarer afgørende – ”vi er nødt til at have hjælp udefra,” siger overlæge",
+      "source": "tv2.dk",
+      "date": "2 dag siden",
+      "snippet": "Ledende overlæge Vagn Bach er en af to faste læger på operation- og intensivområdet på Dronning Ingrids Hospital – i daglig tale kaldet Sana...",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b2331daf5c59be34d5e0a5649f740d02ca229dfd13b843e8ce9.jpeg"
+    },
+    {
+      "position": 7,
+      "link": "https://videnskab.dk/kultur-samfund/trump-vil-have-kontrol-over-groenland-men-hvad-vil-groenlaenderne-selv/",
+      "title": "Trump vil have kontrol over Grønland – men hvad vil grønlænderne selv?",
+      "source": "Videnskab.dk",
+      "date": "1 dag siden",
+      "snippet": "Resultaterne af en spørgeundersøgelse peger på ingen måde på, at befolkningen nærer et ønske om at slutte sig til USA. Bygd i Grønland.",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b23d871cd9f6a88ce13bd761d18499b0b3b2ad565f5a3bcd8e9.jpeg"
+    },
+    {
+      "position": 8,
+      "link": "https://knr.gl/da/tv/qanorooq/qanorooq-07022025",
+      "title": "Qanorooq 07.02.2025",
+      "source": "KNR.gl",
+      "date": "1 dag siden",
+      "snippet": "Gå til hovedindhold. Hjem. Kalaallit Nunaata Radioa Greenlandic Broadcasting Corporation. Qaanaaq. Overskyet. -25. 7.4 m/s. Vindretning.",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b234bc7d3aaa7fb1b67a99ca9be0ca56ed884380d7de1326613.jpeg"
+    },
+    {
+      "position": 9,
+      "link": "https://www.dr.dk/drtv/program/groenlands-hvide-guld_506795",
+      "title": "Grønlands hvide guld",
+      "source": "DR.dk",
+      "date": "for 4 timer siden",
+      "snippet": "Har Grønland altid været en udgift for Danmark? Dokumentarfilmen graver dybt i det økonomiske forhold mellem de to dele af Rigsfællesskabet...",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b239227de2155d53a3c7e2658563046fdf770224239884ef0bf.jpeg"
+    },
+    {
+      "position": 10,
+      "link": "https://www.tv2kosmopol.dk/metropolen/kobenhavnske-firmaer-hev-mineraler-for-milliarder-op-fra-gronlands-undergrund",
+      "title": "Københavnske firmaer hev mineraler for milliarder op fra Grønlands undergrund",
+      "source": "TV 2 Kosmopol",
+      "date": "for 2 timer siden",
+      "snippet": "Danske virksomheder hev i mere end 130 år mineralet kryolit op fra undergrunden ved Arsukfjorden i Sydvestgrønland og fragtede det til derfra til...",
+      "thumbnail": "https://serpapi.com/searches/67a873454d29c1645f24cd30/images/1a146a06adc44b23c40027d10a0884eb6fa7042bac4b72e70777871fa33056ad.jpeg"
+    }
+  ],
+  "pagination": {
+    "current": 1,
+    "next": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=10&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8NMDegQIBBAW",
+    "other_pages": {
+      "2": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=10&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8tMDegQIBBAE",
+      "3": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=20&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8tMDegQIBBAG",
+      "4": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=30&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8tMDegQIBBAI",
+      "5": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=40&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8tMDegQIBBAK",
+      "6": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=50&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8tMDegQIBBAM",
+      "7": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=60&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8tMDegQIBBAO",
+      "8": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=70&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8tMDegQIBBAQ",
+      "9": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=80&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8tMDegQIBBAS",
+      "10": "https://www.google.dk/search?q=gr%C3%B8nland&sca_esv=9cb7d42234e38c28&gl=dk&hl=da&tbm=nws&ei=RnOoZ7aBLp6FwbkPjtODyAo&start=90&sa=N&ved=2ahUKEwi2vOnHobaLAxWeQjABHY7pAKkQ8tMDegQIBBAU"
+    }
+  },
+  "serpapi_pagination": {
+    "current": 1,
+    "next_link": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=10&tbm=nws",
+    "next": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=10&tbm=nws",
+    "other_pages": {
+      "2": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=10&tbm=nws",
+      "3": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=20&tbm=nws",
+      "4": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=30&tbm=nws",
+      "5": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=40&tbm=nws",
+      "6": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=50&tbm=nws",
+      "7": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=60&tbm=nws",
+      "8": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=70&tbm=nws",
+      "9": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=80&tbm=nws",
+      "10": "https://serpapi.com/search.json?device=desktop&engine=google&gl=dk&google_domain=google.dk&hl=da&location=Denmark&q=gr%C3%B8nland&start=90&tbm=nws"
+    }
+  }
+}
