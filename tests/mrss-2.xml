@@ -26,6 +26,7 @@
             </media:thumbnails>
             <media:category>Entertainment</media:category>
             <media:tags>keramik, kreativitet, vinbar</media:tags>
+            <media:subTitle href="https://cdn.jwplayer.com/tracks/1E3U7FnE.vtt" label="SP - Testing MRSS" type="text/vtt"/>
         </item>
     </channel>
 </rss>
