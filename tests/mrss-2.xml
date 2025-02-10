@@ -12,7 +12,6 @@
             <description>Du kender ham måske fra vinbaren Razapaz i Rønne. Der finder du ham stadigvæk, men nu har han også kastet sin kærlighed på keramik. Han drømmer om at dele det med andre og åbner derfor et kæmpe kreativt værksted, hvor alle kan komme og være med. Det er selvfølgelig Patrick Hult, du kan møde i dette afsnit af Mellem os.</description>
             <pubDate>Fri, 07 Feb 2025 15:00:00 +0000</pubDate>
             <guid isPermaLink="false">external-ID-4</guid>
-            <jp:ref_id>api-refid-1</jp:ref_id>
 
             <media:content 
                 url="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
@@ -28,6 +27,7 @@
             <media:category>Entertainment</media:category>
             <media:tags>keramik, kreativitet, vinbar</media:tags>
             <media:subTitle href="https://cdn.jwplayer.com/tracks/1E3U7FnE.vtt" label="SP - Testing MRSS" type="text/vtt"/>
+            <media:ref_id>api-refid-1</media:ref_id>
         </item>
     </channel>
 </rss>
