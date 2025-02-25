@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Typesense Search with Enhanced Highlights</title>
+    <title>Simple Typesense Search</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Typesense client -->
@@ -35,7 +35,7 @@
     <script>
       // Global variables
       let currentQuery = '';
-      const perPage = 10; // results per page
+      const perPage = 10; // Number of results per page
 
       // Create a new Typesense client instance
       const client = new Typesense.Client({
@@ -47,47 +47,7 @@
         apiKey: 'jUVuMLjf7CCgV2ZVHRsfd5kgNex8oyL4'
       });
 
-      // A simple helper that splits text into sentences.
-      function cropToSentence(text) {
-        // Ensure text is a string.
-        text = Array.isArray(text) ? text.join(" ") : String(text);
-        // This regex splits by . ! ? characters.
-        const sentences = text.match(/[^\.!\?]+[\.!\?]+/g);
-        return sentences ? sentences[0].trim() : text;
-      }
-
-      // Function to get a highlighted sentence.
-      // It replaces the matching plain-text portion within the sentence (from "value") with the highlighted "snippet".
-      function getHighlightedSentence(highlightObj) {
-        // Check if we have an object with both snippet and value.
-        if (typeof highlightObj === "object" && highlightObj.snippet && highlightObj.value) {
-          const snippet = highlightObj.snippet;
-          const fullValue = highlightObj.value;
-          // Remove <mark> tags to get plain text from snippet.
-          const snippetPlain = snippet.replace(/<mark>/g, "").replace(/<\/mark>/g, "");
-          const index = fullValue.indexOf(snippetPlain);
-          if (index !== -1) {
-            // Split fullValue into sentences.
-            const sentences = fullValue.match(/[^\.!\?]+[\.!\?]+/g);
-            if (sentences) {
-              for (let sentence of sentences) {
-                if (sentence.indexOf(snippetPlain) !== -1) {
-                  // Replace the plain snippet with the highlighted version.
-                  return sentence.replace(snippetPlain, snippet).trim();
-                }
-              }
-            }
-          }
-          // Fallback: simply crop the snippet itself.
-          return cropToSentence(snippet);
-        } else if (typeof highlightObj === "string") {
-          // If it's a simple string, just crop it.
-          return cropToSentence(highlightObj);
-        }
-        return "";
-      }
-
-      // Render the search results and pagination.
+      // Render the search results and pagination
       function renderResults(searchResults) {
         const resultsContainer = document.getElementById('results');
         resultsContainer.innerHTML = '';
@@ -97,16 +57,17 @@
           return;
         }
 
+        // Loop over the hits and display each result.
         searchResults.hits.forEach(hit => {
           const doc = hit.document;
           // Remove "entry::" prefix from the id.
           const nodeId = doc.id.replace(/^entry::/, '');
 
-          // Create result container.
+          // Create a container for each result.
           const resultDiv = document.createElement('div');
           resultDiv.className = "pb-4 border-b border-gray-200";
 
-          // Title as clickable link.
+          // Title as a clickable link.
           const titleLink = document.createElement('a');
           titleLink.href = `https://www.tvmidtvest.dk/node/${nodeId}`;
           titleLink.target = "_blank";
@@ -114,31 +75,17 @@
           titleLink.textContent = doc.full_title || "Untitled";
           resultDiv.appendChild(titleLink);
 
-          // Display URL (like Google search results).
+          // Display the URL (like Google search results).
           const urlDisplay = document.createElement('div');
           urlDisplay.className = "text-green-600 text-sm mt-1";
           urlDisplay.textContent = `https://www.tvmidtvest.dk/node/${nodeId}`;
           resultDiv.appendChild(urlDisplay);
 
-          // Create snippet container.
-          const snippetContainer = document.createElement('p');
-          snippetContainer.className = "text-gray-700 mt-2 text-sm";
-
-          let snippetHTML = "";
-          if (hit.highlight) {
-            // Try first with summary then content.
-            if (hit.highlight.summary) {
-              snippetHTML = getHighlightedSentence(hit.highlight.summary);
-            } else if (hit.highlight.content) {
-              snippetHTML = getHighlightedSentence(hit.highlight.content);
-            }
-          }
-          // Fallback to plain text if no highlight is returned.
-          if (!snippetHTML) {
-            snippetHTML = doc.summary || doc.content || "";
-          }
-          snippetContainer.innerHTML = snippetHTML;
-          resultDiv.appendChild(snippetContainer);
+          // Display the summary.
+          const summaryPara = document.createElement('p');
+          summaryPara.className = "text-gray-700 mt-2 text-sm";
+          summaryPara.textContent = doc.summary || "No summary available.";
+          resultDiv.appendChild(summaryPara);
 
           resultsContainer.appendChild(resultDiv);
         });
@@ -188,9 +135,7 @@
           q: query,
           preset: 'public',
           page: page,
-          per_page: perPage,
-          // Using full highlighting so we get the complete field text plus the snippet.
-          highlight_full_fields: 'summary,content'
+          per_page: perPage
         }).then(searchResults => {
           console.log('Search Results:', searchResults);
           renderResults(searchResults);
