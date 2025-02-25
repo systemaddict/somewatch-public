@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Typesense Search with Full Highlights & Cropped Sentence</title>
+    <title>Typesense Search with Enhanced Highlights</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Typesense client -->
@@ -47,31 +47,47 @@
         apiKey: 'jUVuMLjf7CCgV2ZVHRsfd5kgNex8oyL4'
       });
 
-      // Helper function to crop full highlighted text to the sentence containing the <mark> tag
-      function cropToSentence(fullText) {
-        // If fullText is an array, join its elements into a single string.
-        if (Array.isArray(fullText)) {
-          fullText = fullText.join(" ");
-        } else {
-          fullText = String(fullText);
-        }
-        
-        // Use a simple regex to split text into sentences.
-        const sentences = fullText.match(/[^\.!\?]+[\.!\?]+/g);
-        if (sentences) {
-          // Find the sentence containing the highlighted term.
-          for (let sentence of sentences) {
-            if (sentence.includes("<mark>")) {
-              return sentence.trim();
-            }
-          }
-          // If no sentence contains <mark>, return the first sentence as fallback.
-          return sentences[0].trim();
-        }
-        return fullText;
+      // A simple helper that splits text into sentences.
+      function cropToSentence(text) {
+        // Ensure text is a string.
+        text = Array.isArray(text) ? text.join(" ") : String(text);
+        // This regex splits by . ! ? characters.
+        const sentences = text.match(/[^\.!\?]+[\.!\?]+/g);
+        return sentences ? sentences[0].trim() : text;
       }
 
-      // Render the search results and pagination
+      // Function to get a highlighted sentence.
+      // It replaces the matching plain-text portion within the sentence (from "value") with the highlighted "snippet".
+      function getHighlightedSentence(highlightObj) {
+        // Check if we have an object with both snippet and value.
+        if (typeof highlightObj === "object" && highlightObj.snippet && highlightObj.value) {
+          const snippet = highlightObj.snippet;
+          const fullValue = highlightObj.value;
+          // Remove <mark> tags to get plain text from snippet.
+          const snippetPlain = snippet.replace(/<mark>/g, "").replace(/<\/mark>/g, "");
+          const index = fullValue.indexOf(snippetPlain);
+          if (index !== -1) {
+            // Split fullValue into sentences.
+            const sentences = fullValue.match(/[^\.!\?]+[\.!\?]+/g);
+            if (sentences) {
+              for (let sentence of sentences) {
+                if (sentence.indexOf(snippetPlain) !== -1) {
+                  // Replace the plain snippet with the highlighted version.
+                  return sentence.replace(snippetPlain, snippet).trim();
+                }
+              }
+            }
+          }
+          // Fallback: simply crop the snippet itself.
+          return cropToSentence(snippet);
+        } else if (typeof highlightObj === "string") {
+          // If it's a simple string, just crop it.
+          return cropToSentence(highlightObj);
+        }
+        return "";
+      }
+
+      // Render the search results and pagination.
       function renderResults(searchResults) {
         const resultsContainer = document.getElementById('results');
         resultsContainer.innerHTML = '';
@@ -83,14 +99,14 @@
 
         searchResults.hits.forEach(hit => {
           const doc = hit.document;
-          // Remove "entry::" prefix from the id
+          // Remove "entry::" prefix from the id.
           const nodeId = doc.id.replace(/^entry::/, '');
 
-          // Create result container
+          // Create result container.
           const resultDiv = document.createElement('div');
           resultDiv.className = "pb-4 border-b border-gray-200";
 
-          // Title as clickable link
+          // Title as clickable link.
           const titleLink = document.createElement('a');
           titleLink.href = `https://www.tvmidtvest.dk/node/${nodeId}`;
           titleLink.target = "_blank";
@@ -98,23 +114,23 @@
           titleLink.textContent = doc.full_title || "Untitled";
           resultDiv.appendChild(titleLink);
 
-          // Display URL (like Google search results)
+          // Display URL (like Google search results).
           const urlDisplay = document.createElement('div');
           urlDisplay.className = "text-green-600 text-sm mt-1";
           urlDisplay.textContent = `https://www.tvmidtvest.dk/node/${nodeId}`;
           resultDiv.appendChild(urlDisplay);
 
-          // Create snippet container
+          // Create snippet container.
           const snippetContainer = document.createElement('p');
           snippetContainer.className = "text-gray-700 mt-2 text-sm";
 
           let snippetHTML = "";
           if (hit.highlight) {
-            // Try to use full highlighted fields, then crop to a complete sentence.
+            // Try first with summary then content.
             if (hit.highlight.summary) {
-              snippetHTML = cropToSentence(hit.highlight.summary);
+              snippetHTML = getHighlightedSentence(hit.highlight.summary);
             } else if (hit.highlight.content) {
-              snippetHTML = cropToSentence(hit.highlight.content);
+              snippetHTML = getHighlightedSentence(hit.highlight.content);
             }
           }
           // Fallback to plain text if no highlight is returned.
@@ -127,14 +143,14 @@
           resultsContainer.appendChild(resultDiv);
         });
 
-        // Render pagination controls
+        // Render pagination controls.
         const totalPages = Math.ceil(searchResults.found / perPage);
         const currentPage = searchResults.page || 1;
         const paginationControls = renderPagination(currentPage, totalPages);
         resultsContainer.appendChild(paginationControls);
       }
 
-      // Render pagination controls using Tailwind classes
+      // Render pagination controls using Tailwind classes.
       function renderPagination(currentPage, totalPages) {
         const paginationContainer = document.createElement('div');
         paginationContainer.className = "mt-6 flex items-center justify-center space-x-4";
@@ -163,7 +179,7 @@
         return paginationContainer;
       }
 
-      // Perform search using the provided query and page number
+      // Perform search using the provided query and page number.
       function performSearch(query, page = 1) {
         currentQuery = query;
         document.getElementById('results').innerHTML = '<p class="text-gray-600">Loading results...</p>';
@@ -173,7 +189,7 @@
           preset: 'public',
           page: page,
           per_page: perPage,
-          // Use highlight_full_fields so we get the full text (with <mark> tags)
+          // Using full highlighting so we get the complete field text plus the snippet.
           highlight_full_fields: 'summary,content'
         }).then(searchResults => {
           console.log('Search Results:', searchResults);
@@ -184,7 +200,7 @@
         });
       }
 
-      // Event listener for search form submission
+      // Event listener for search form submission.
       document.getElementById('search-form').addEventListener('submit', function(event) {
         event.preventDefault();
         const query = document.getElementById('search-input').value;
