@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Typesense Search with Tailwind & Pagination</title>
+    <title>Typesense Search with Highlights & Pagination</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Typesense client -->
@@ -15,8 +15,8 @@
       <!-- Search Form -->
       <form id="search-form" class="mb-6 flex space-x-2">
         <input
-          type="text"
           id="search-input"
+          type="text"
           placeholder="Enter search query"
           required
           class="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -27,11 +27,11 @@
       </form>
       
       <!-- Results Container -->
-      <div id="results" class="space-y-4">
+      <div id="results" class="space-y-6">
         <p class="text-gray-600">Please enter a query to search.</p>
       </div>
     </div>
-
+    
     <script>
       // Global variables
       let currentQuery = '';
@@ -39,14 +39,12 @@
 
       // Create a new Typesense client instance
       const client = new Typesense.Client({
-        nodes: [
-          {
-            host: 'ubd8iz2nk1536tf9p-1.a1.typesense.net', // Your Typesense server host
-            port: 443, // Your server port
-            protocol: 'https' // Protocol to use
-          }
-        ],
-        apiKey: 'jUVuMLjf7CCgV2ZVHRsfd5kgNex8oyL4' // Your Typesense API key
+        nodes: [{
+          host: 'ubd8iz2nk1536tf9p-1.a1.typesense.net',
+          port: 443,
+          protocol: 'https'
+        }],
+        apiKey: 'jUVuMLjf7CCgV2ZVHRsfd5kgNex8oyL4'
       });
 
       // Render the search results and pagination
@@ -54,42 +52,59 @@
         const resultsContainer = document.getElementById('results');
         resultsContainer.innerHTML = '';
 
-        // If no hits, display a message
         if (searchResults.hits.length === 0) {
           resultsContainer.innerHTML = '<p class="text-gray-600">No results found.</p>';
           return;
         }
 
-        // Create list of results
-        const ul = document.createElement('ul');
-        ul.className = "divide-y divide-gray-200";
-
         searchResults.hits.forEach(hit => {
           const doc = hit.document;
-          const li = document.createElement('li');
-          li.className = "py-4";
-
           // Remove "entry::" prefix from the id
           const nodeId = doc.id.replace(/^entry::/, '');
 
-          // Create clickable title using full_title and link to the correct node URL
+          // Create result container
+          const resultDiv = document.createElement('div');
+          resultDiv.className = "pb-4 border-b border-gray-200";
+
+          // Title as clickable link
           const titleLink = document.createElement('a');
           titleLink.href = `https://www.tvmidtvest.dk/node/${nodeId}`;
           titleLink.target = "_blank";
-          titleLink.className = "text-xl font-semibold text-blue-600 hover:underline";
+          titleLink.className = "text-xl font-bold text-blue-700 hover:underline";
           titleLink.textContent = doc.full_title || "Untitled";
+          resultDiv.appendChild(titleLink);
 
-          // Create a paragraph for summary
-          const summaryPara = document.createElement('p');
-          summaryPara.className = "text-gray-700 mt-1";
-          summaryPara.textContent = doc.summary || "";
+          // Display URL (like Google search results)
+          const urlDisplay = document.createElement('div');
+          urlDisplay.className = "text-green-600 text-sm mt-1";
+          urlDisplay.textContent = `https://www.tvmidtvest.dk/node/${nodeId}`;
+          resultDiv.appendChild(urlDisplay);
 
-          li.appendChild(titleLink);
-          li.appendChild(summaryPara);
-          ul.appendChild(li);
+          // Create snippet container
+          const snippetContainer = document.createElement('p');
+          snippetContainer.className = "text-gray-700 mt-2 text-sm";
+
+          let snippetHTML = '';
+          if (hit.highlight) {
+            // Use highlighted snippet from summary if available
+            if (hit.highlight.summary && hit.highlight.summary.snippet) {
+              snippetHTML += hit.highlight.summary.snippet;
+            }
+            // Append highlighted snippet from content if available
+            if (hit.highlight.content && hit.highlight.content.snippet) {
+              if (snippetHTML) snippetHTML += '<br>';
+              snippetHTML += hit.highlight.content.snippet;
+            }
+          }
+          // Fallback to plain text if no highlight is returned
+          if (!snippetHTML) {
+            snippetHTML = doc.summary || doc.content || "";
+          }
+          snippetContainer.innerHTML = snippetHTML;
+          resultDiv.appendChild(snippetContainer);
+
+          resultsContainer.appendChild(resultDiv);
         });
-
-        resultsContainer.appendChild(ul);
 
         // Render pagination controls
         const totalPages = Math.ceil(searchResults.found / perPage);
@@ -132,27 +147,24 @@
         currentQuery = query;
         document.getElementById('results').innerHTML = '<p class="text-gray-600">Loading results...</p>';
 
-        client
-          .collections('public')
-          .documents()
-          .search({
-            q: query,
-            preset: 'public',
-            page: page,
-            per_page: perPage
-          })
-          .then(searchResults => {
-            console.log('Search Results:', searchResults);
-            renderResults(searchResults);
-          })
-          .catch(error => {
-            console.error('Search error:', error);
-            document.getElementById('results').innerHTML = '<p class="text-red-600">Error loading results.</p>';
-          });
+        client.collections('public').documents().search({
+          q: query,
+          preset: 'public',
+          page: page,
+          per_page: perPage,
+          highlight_fields: 'summary,content',
+          snippet_fields: 'summary:100,content:100'
+        }).then(searchResults => {
+          console.log('Search Results:', searchResults);
+          renderResults(searchResults);
+        }).catch(error => {
+          console.error('Search error:', error);
+          document.getElementById('results').innerHTML = '<p class="text-red-600">Error loading results.</p>';
+        });
       }
 
       // Event listener for search form submission
-      document.getElementById('search-form').addEventListener('submit', function (event) {
+      document.getElementById('search-form').addEventListener('submit', function(event) {
         event.preventDefault();
         const query = document.getElementById('search-input').value;
         performSearch(query, 1);
