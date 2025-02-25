@@ -49,16 +49,23 @@
 
       // Helper function to crop full highlighted text to the sentence containing the <mark> tag
       function cropToSentence(fullText) {
-        // Use a simple regex to split text into sentences. This is a basic approach.
+        // If fullText is an array, join its elements into a single string.
+        if (Array.isArray(fullText)) {
+          fullText = fullText.join(" ");
+        } else {
+          fullText = String(fullText);
+        }
+        
+        // Use a simple regex to split text into sentences.
         const sentences = fullText.match(/[^\.!\?]+[\.!\?]+/g);
         if (sentences) {
-          // Find the sentence containing the highlighted term
+          // Find the sentence containing the highlighted term.
           for (let sentence of sentences) {
             if (sentence.includes("<mark>")) {
               return sentence.trim();
             }
           }
-          // If no sentence contains <mark>, return the first sentence as fallback
+          // If no sentence contains <mark>, return the first sentence as fallback.
           return sentences[0].trim();
         }
         return fullText;
@@ -110,7 +117,7 @@
               snippetHTML = cropToSentence(hit.highlight.content);
             }
           }
-          // Fallback to plain text if no highlight is returned
+          // Fallback to plain text if no highlight is returned.
           if (!snippetHTML) {
             snippetHTML = doc.summary || doc.content || "";
           }
