@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Typesense Minimal Example</title>
+    <title>Typesense Search Example</title>
     <script src="https://cdn.jsdelivr.net/npm/typesense@2/dist/typesense.min.js"></script>
     <style>
       body {
@@ -11,6 +11,19 @@
       }
       h1 {
         color: #333;
+      }
+      .search-container {
+        margin-bottom: 20px;
+      }
+      .search-input {
+        padding: 8px;
+        font-size: 1em;
+        width: 250px;
+        margin-right: 10px;
+      }
+      .search-button {
+        padding: 8px 16px;
+        font-size: 1em;
       }
       #results {
         margin-top: 20px;
@@ -34,8 +47,20 @@
     </style>
   </head>
   <body>
-    <h1>Search Results</h1>
-    <div id="results">Loading results...</div>
+    <h1>Typesense Search</h1>
+    <div class="search-container">
+      <form id="search-form">
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="Enter search query"
+          required
+        />
+        <button type="submit" class="search-button">Search</button>
+      </form>
+    </div>
+    <div id="results">Please enter a query to search.</div>
     <script>
       // Create a new Typesense client instance
       const client = new Typesense.Client({
@@ -52,7 +77,7 @@
       // Function to render search results nicely
       function renderResults(searchResults) {
         const resultsContainer = document.getElementById('results');
-        resultsContainer.innerHTML = ''; // Clear loading message
+        resultsContainer.innerHTML = ''; // Clear previous results
 
         if (searchResults.hits.length === 0) {
           resultsContainer.innerHTML = '<p>No results found.</p>';
@@ -69,32 +94,45 @@
           const li = document.createElement('li');
           li.classList.add('result-item');
 
-          // Display title (or fallback) and any additional details you'd like.
+          // Adjust the fields below as needed based on your document structure
           li.innerHTML = `
             <p class="result-title">${doc.title || 'Untitled'}</p>
             <p class="result-details">${doc.author ? 'by ' + doc.author : ''}</p>
           `;
           ul.appendChild(li);
         });
+
         resultsContainer.appendChild(ul);
       }
 
-      // Perform the search on the "public" collection
-      client
-        .collections('public')
-        .documents()
-        .search({
-          q: 'midtvest',
-          preset: 'public'
-        })
-        .then(function (searchResults) {
-          console.log('Search Results:', searchResults);
-          renderResults(searchResults);
-        })
-        .catch(function (error) {
-          console.error('Search error:', error);
-          document.getElementById('results').innerHTML = '<p>Error loading results.</p>';
-        });
+      // Function to perform a search using the provided query
+      function performSearch(query) {
+        // Optionally display a loading message
+        document.getElementById('results').innerHTML = '<p>Loading results...</p>';
+
+        client
+          .collections('public')
+          .documents()
+          .search({
+            q: query,
+            preset: 'public'
+          })
+          .then(function (searchResults) {
+            console.log('Search Results:', searchResults);
+            renderResults(searchResults);
+          })
+          .catch(function (error) {
+            console.error('Search error:', error);
+            document.getElementById('results').innerHTML = '<p>Error loading results.</p>';
+          });
+      }
+
+      // Event listener for the search form submission
+      document.getElementById('search-form').addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent the default form submission
+        const query = document.getElementById('search-input').value;
+        performSearch(query);
+      });
     </script>
   </body>
 </html>
