@@ -69,9 +69,12 @@
           const li = document.createElement('li');
           li.className = "py-4";
 
-          // Create clickable title using full_title and link to node URL using the document id
+          // Remove "entry::" prefix from the id
+          const nodeId = doc.id.replace(/^entry::/, '');
+
+          // Create clickable title using full_title and link to the correct node URL
           const titleLink = document.createElement('a');
-          titleLink.href = `https://www.tvmidtvest.dk/node/${doc.id}`;
+          titleLink.href = `https://www.tvmidtvest.dk/node/${nodeId}`;
           titleLink.target = "_blank";
           titleLink.className = "text-xl font-semibold text-blue-600 hover:underline";
           titleLink.textContent = doc.full_title || "Untitled";
