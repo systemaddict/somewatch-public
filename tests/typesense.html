@@ -21,11 +21,11 @@
 
       // Example: Search the "books" collection
       client
-        .collections('articles')
+        .collections('public')
         .documents()
         .search({
           q: 'midtvest',
-          query_by: 'title'
+          preset: 'public'
         })
         .then(function (searchResults) {
           console.log('Search Results:', searchResults);
