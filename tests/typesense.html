@@ -2,77 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Typesense Search with Pagination</title>
+    <title>Typesense Search with Tailwind & Pagination</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Typesense client -->
     <script src="https://cdn.jsdelivr.net/npm/typesense@2/dist/typesense.min.js"></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-      }
-      h1 {
-        color: #333;
-      }
-      .search-container {
-        margin-bottom: 20px;
-      }
-      .search-input {
-        padding: 8px;
-        font-size: 1em;
-        width: 250px;
-        margin-right: 10px;
-      }
-      .search-button {
-        padding: 8px 16px;
-        font-size: 1em;
-      }
-      #results {
-        margin-top: 20px;
-      }
-      .result-item {
-        border-bottom: 1px solid #ccc;
-        padding: 10px 0;
-      }
-      .result-item:last-child {
-        border-bottom: none;
-      }
-      .result-title {
-        font-weight: bold;
-        font-size: 1.2em;
-        margin: 0;
-      }
-      .result-details {
-        color: #555;
-        margin: 5px 0 0;
-      }
-      #pagination {
-        margin-top: 20px;
-      }
-      #pagination button {
-        padding: 6px 12px;
-        margin: 0 5px;
-        font-size: 1em;
-      }
-    </style>
   </head>
-  <body>
-    <h1>Typesense Search with Pagination</h1>
-    <div class="search-container">
-      <form id="search-form">
+  <body class="bg-gray-50">
+    <div class="max-w-3xl mx-auto p-6">
+      <h1 class="text-3xl font-bold text-gray-800 mb-6">TV MidtVest Search</h1>
+      
+      <!-- Search Form -->
+      <form id="search-form" class="mb-6 flex space-x-2">
         <input
           type="text"
           id="search-input"
-          class="search-input"
           placeholder="Enter search query"
           required
+          class="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button type="submit" class="search-button">Search</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Search
+        </button>
       </form>
+      
+      <!-- Results Container -->
+      <div id="results" class="space-y-4">
+        <p class="text-gray-600">Please enter a query to search.</p>
+      </div>
     </div>
-    <div id="results">Please enter a query to search.</div>
+
     <script>
       // Global variables
       let currentQuery = '';
-      const perPage = 10; // Number of results per page
+      const perPage = 10; // results per page
 
       // Create a new Typesense client instance
       const client = new Typesense.Client({
@@ -86,78 +49,85 @@
         apiKey: 'jUVuMLjf7CCgV2ZVHRsfd5kgNex8oyL4' // Your Typesense API key
       });
 
-      // Function to render search results and pagination controls
+      // Render the search results and pagination
       function renderResults(searchResults) {
         const resultsContainer = document.getElementById('results');
-        resultsContainer.innerHTML = ''; // Clear previous results
+        resultsContainer.innerHTML = '';
 
+        // If no hits, display a message
         if (searchResults.hits.length === 0) {
-          resultsContainer.innerHTML = '<p>No results found.</p>';
+          resultsContainer.innerHTML = '<p class="text-gray-600">No results found.</p>';
           return;
         }
 
-        // Create a list to display the search results
+        // Create list of results
         const ul = document.createElement('ul');
-        ul.style.listStyleType = 'none';
-        ul.style.padding = '0';
+        ul.className = "divide-y divide-gray-200";
 
         searchResults.hits.forEach(hit => {
           const doc = hit.document;
           const li = document.createElement('li');
-          li.classList.add('result-item');
+          li.className = "py-4";
 
-          // Adjust the fields below as needed based on your document structure
-          li.innerHTML = `
-            <p class="result-title">${doc.title || 'Untitled'}</p>
-            <p class="result-details">${doc.author ? 'by ' + doc.author : ''}</p>
-          `;
+          // Create clickable title using full_title and link to node URL using the document id
+          const titleLink = document.createElement('a');
+          titleLink.href = `https://www.tvmidtvest.dk/node/${doc.id}`;
+          titleLink.target = "_blank";
+          titleLink.className = "text-xl font-semibold text-blue-600 hover:underline";
+          titleLink.textContent = doc.full_title || "Untitled";
+
+          // Create a paragraph for summary
+          const summaryPara = document.createElement('p');
+          summaryPara.className = "text-gray-700 mt-1";
+          summaryPara.textContent = doc.summary || "";
+
+          li.appendChild(titleLink);
+          li.appendChild(summaryPara);
           ul.appendChild(li);
         });
+
         resultsContainer.appendChild(ul);
 
-        // Calculate pagination info based on the total results and perPage setting
+        // Render pagination controls
         const totalPages = Math.ceil(searchResults.found / perPage);
         const currentPage = searchResults.page || 1;
-
-        // Append pagination controls if needed
         const paginationControls = renderPagination(currentPage, totalPages);
         resultsContainer.appendChild(paginationControls);
       }
 
-      // Function to render pagination controls (Previous and Next buttons)
+      // Render pagination controls using Tailwind classes
       function renderPagination(currentPage, totalPages) {
         const paginationContainer = document.createElement('div');
-        paginationContainer.id = 'pagination';
+        paginationContainer.className = "mt-6 flex items-center justify-center space-x-4";
 
         if (currentPage > 1) {
           const prevButton = document.createElement('button');
           prevButton.textContent = 'Previous';
-          prevButton.addEventListener('click', function () {
-            performSearch(currentQuery, currentPage - 1);
-          });
+          prevButton.className = "px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300";
+          prevButton.addEventListener('click', () => performSearch(currentQuery, currentPage - 1));
           paginationContainer.appendChild(prevButton);
         }
 
         const pageInfo = document.createElement('span');
-        pageInfo.textContent = ' Page ' + currentPage + ' of ' + totalPages + ' ';
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        pageInfo.className = "text-gray-600";
         paginationContainer.appendChild(pageInfo);
 
         if (currentPage < totalPages) {
           const nextButton = document.createElement('button');
           nextButton.textContent = 'Next';
-          nextButton.addEventListener('click', function () {
-            performSearch(currentQuery, currentPage + 1);
-          });
+          nextButton.className = "px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300";
+          nextButton.addEventListener('click', () => performSearch(currentQuery, currentPage + 1));
           paginationContainer.appendChild(nextButton);
         }
 
         return paginationContainer;
       }
 
-      // Function to perform a search using the provided query and page number
+      // Perform search using the provided query and page number
       function performSearch(query, page = 1) {
         currentQuery = query;
-        document.getElementById('results').innerHTML = '<p>Loading results...</p>';
+        document.getElementById('results').innerHTML = '<p class="text-gray-600">Loading results...</p>';
 
         client
           .collections('public')
@@ -168,19 +138,19 @@
             page: page,
             per_page: perPage
           })
-          .then(function (searchResults) {
+          .then(searchResults => {
             console.log('Search Results:', searchResults);
             renderResults(searchResults);
           })
-          .catch(function (error) {
+          .catch(error => {
             console.error('Search error:', error);
-            document.getElementById('results').innerHTML = '<p>Error loading results.</p>';
+            document.getElementById('results').innerHTML = '<p class="text-red-600">Error loading results.</p>';
           });
       }
 
-      // Event listener for the search form submission
+      // Event listener for search form submission
       document.getElementById('search-form').addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevent form from submitting normally
+        event.preventDefault();
         const query = document.getElementById('search-input').value;
         performSearch(query, 1);
       });
