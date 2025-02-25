@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Typesense Search with Highlights & Pagination</title>
+    <title>Typesense Search with Full Highlights & Cropped Sentence</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Typesense client -->
@@ -47,6 +47,23 @@
         apiKey: 'jUVuMLjf7CCgV2ZVHRsfd5kgNex8oyL4'
       });
 
+      // Helper function to crop full highlighted text to the sentence containing the <mark> tag
+      function cropToSentence(fullText) {
+        // Use a simple regex to split text into sentences. This is a basic approach.
+        const sentences = fullText.match(/[^\.!\?]+[\.!\?]+/g);
+        if (sentences) {
+          // Find the sentence containing the highlighted term
+          for (let sentence of sentences) {
+            if (sentence.includes("<mark>")) {
+              return sentence.trim();
+            }
+          }
+          // If no sentence contains <mark>, return the first sentence as fallback
+          return sentences[0].trim();
+        }
+        return fullText;
+      }
+
       // Render the search results and pagination
       function renderResults(searchResults) {
         const resultsContainer = document.getElementById('results');
@@ -84,16 +101,13 @@
           const snippetContainer = document.createElement('p');
           snippetContainer.className = "text-gray-700 mt-2 text-sm";
 
-          let snippetHTML = '';
+          let snippetHTML = "";
           if (hit.highlight) {
-            // Use highlighted snippet from summary if available
-            if (hit.highlight.summary && hit.highlight.summary.snippet) {
-              snippetHTML += hit.highlight.summary.snippet;
-            }
-            // Append highlighted snippet from content if available
-            if (hit.highlight.content && hit.highlight.content.snippet) {
-              if (snippetHTML) snippetHTML += '<br>';
-              snippetHTML += hit.highlight.content.snippet;
+            // Try to use full highlighted fields, then crop to a complete sentence.
+            if (hit.highlight.summary) {
+              snippetHTML = cropToSentence(hit.highlight.summary);
+            } else if (hit.highlight.content) {
+              snippetHTML = cropToSentence(hit.highlight.content);
             }
           }
           // Fallback to plain text if no highlight is returned
@@ -152,8 +166,8 @@
           preset: 'public',
           page: page,
           per_page: perPage,
-          highlight_fields: 'summary,content',
-          snippet_fields: 'summary:100,content:100'
+          // Use highlight_full_fields so we get the full text (with <mark> tags)
+          highlight_full_fields: 'summary,content'
         }).then(searchResults => {
           console.log('Search Results:', searchResults);
           renderResults(searchResults);
