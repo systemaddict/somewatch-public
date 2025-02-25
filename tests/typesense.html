@@ -4,22 +4,82 @@
     <meta charset="UTF-8" />
     <title>Typesense Minimal Example</title>
     <script src="https://cdn.jsdelivr.net/npm/typesense@2/dist/typesense.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      #results {
+        margin-top: 20px;
+      }
+      .result-item {
+        border-bottom: 1px solid #ccc;
+        padding: 10px 0;
+      }
+      .result-item:last-child {
+        border-bottom: none;
+      }
+      .result-title {
+        font-weight: bold;
+        font-size: 1.2em;
+        margin: 0;
+      }
+      .result-details {
+        color: #555;
+        margin: 5px 0 0;
+      }
+    </style>
   </head>
   <body>
+    <h1>Search Results</h1>
+    <div id="results">Loading results...</div>
     <script>
       // Create a new Typesense client instance
       const client = new Typesense.Client({
         nodes: [
           {
-            host: 'ubd8iz2nk1536tf9p-1.a1.typesense.net',    // Replace with your Typesense server host
-            port: 443,           // Replace with your server port
-            protocol: 'https'      // Use 'https' if needed
+            host: 'ubd8iz2nk1536tf9p-1.a1.typesense.net', // Your Typesense server host
+            port: 443, // Your server port
+            protocol: 'https' // Protocol to use
           }
         ],
-        apiKey: 'jUVuMLjf7CCgV2ZVHRsfd5kgNex8oyL4'   // Replace with your Typesense API key
+        apiKey: 'jUVuMLjf7CCgV2ZVHRsfd5kgNex8oyL4' // Your Typesense API key
       });
 
-      // Example: Search the "books" collection
+      // Function to render search results nicely
+      function renderResults(searchResults) {
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = ''; // Clear loading message
+
+        if (searchResults.hits.length === 0) {
+          resultsContainer.innerHTML = '<p>No results found.</p>';
+          return;
+        }
+
+        // Create a list to hold the results
+        const ul = document.createElement('ul');
+        ul.style.listStyleType = 'none';
+        ul.style.padding = '0';
+
+        searchResults.hits.forEach(hit => {
+          const doc = hit.document;
+          const li = document.createElement('li');
+          li.classList.add('result-item');
+
+          // Display title (or fallback) and any additional details you'd like.
+          li.innerHTML = `
+            <p class="result-title">${doc.title || 'Untitled'}</p>
+            <p class="result-details">${doc.author ? 'by ' + doc.author : ''}</p>
+          `;
+          ul.appendChild(li);
+        });
+        resultsContainer.appendChild(ul);
+      }
+
+      // Perform the search on the "public" collection
       client
         .collections('public')
         .documents()
@@ -29,9 +89,11 @@
         })
         .then(function (searchResults) {
           console.log('Search Results:', searchResults);
+          renderResults(searchResults);
         })
         .catch(function (error) {
           console.error('Search error:', error);
+          document.getElementById('results').innerHTML = '<p>Error loading results.</p>';
         });
     </script>
   </body>
