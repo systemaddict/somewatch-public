@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Typesense Minimal Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/typesense@2/dist/typesense.min.js"></script>
+  </head>
+  <body>
+    <script>
+      // Create a new Typesense client instance
+      const client = new Typesense.Client({
+        nodes: [
+          {
+            host: 'ubd8iz2nk1536tf9p-1.a1.typesense.net',    // Replace with your Typesense server host
+            port: 443,           // Replace with your server port
+            protocol: 'https'      // Use 'https' if needed
+          }
+        ],
+        apiKey: 'BCPPuYPV7m9bWag9J6vyKowdqFvjjNlz'   // Replace with your Typesense API key
+      });
+
+      // Example: Search the "books" collection
+      client
+        .collections('articles')
+        .documents()
+        .search({
+          q: 'midtvest',
+          query_by: 'title'
+        })
+        .then(function (searchResults) {
+          console.log('Search Results:', searchResults);
+        })
+        .catch(function (error) {
+          console.error('Search error:', error);
+        });
+    </script>
+  </body>
+</html>
