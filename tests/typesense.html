@@ -75,11 +75,23 @@
           titleLink.textContent = doc.full_title || "Untitled";
           resultDiv.appendChild(titleLink);
 
-          // Display the URL (like Google search results).
+          // Display URL (like Google search results).
           const urlDisplay = document.createElement('div');
           urlDisplay.className = "text-green-600 text-sm mt-1";
           urlDisplay.textContent = `https://www.tvmidtvest.dk/node/${nodeId}`;
           resultDiv.appendChild(urlDisplay);
+
+          // Display the published date (if available) in Danish format.
+          if (doc.published_date) {
+            const dateDiv = document.createElement('div');
+            dateDiv.className = "text-gray-600 text-sm mt-1";
+            // Convert seconds to milliseconds.
+            const publishedDate = new Date(doc.published_date * 1000);
+            // Format the date in Danish style.
+            const formattedDate = publishedDate.toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' });
+            dateDiv.textContent = formattedDate;
+            resultDiv.appendChild(dateDiv);
+          }
 
           // Display the summary.
           const summaryPara = document.createElement('p');
