@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Frame Grabber</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .video-container {
+            margin: 20px 0;
+            position: relative;
+        }
+        video {
+            width: 100%;
+            border-radius: 4px;
+            background-color: #000;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        .disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .disabled:hover {
+            background-color: #ccc;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex-grow: 1;
+        }
+        .time-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        #timeDisplay {
+            font-family: monospace;
+            font-size: 16px;
+            min-width: 80px;
+        }
+        .frame-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        canvas {
+            max-width: 100%;
+            display: none;
+            border: 1px solid #ddd;
+            background-color: #eee;
+            margin-top: 10px;
+        }
+        .frame-container {
+            margin-top: 20px;
+        }
+        .frame-info {
+            font-size: 14px;
+            color: #666;
+            margin: 10px 0;
+        }
+        #videoInfo {
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        .warning-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .success-box {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .error-box {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .info-box {
+            background-color: #e9ecef;
+            border-left: 4px solid #6c757d;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .checkbox-container {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-container input {
+            margin-right: 8px;
+        }
+        .screenshot-container {
+            margin-top: 15px;
+        }
+        #screenshotBtn {
+            background-color: #34a853;
+        }
+        #screenshotBtn:hover {
+            background-color: #2e8046;
+        }
+        .cors-options {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9f5ff;
+            border-radius: 4px;
+        }
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+        }
+        .no-display {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Video Frame Grabber</h1>
+        
+        <div class="info-box">
+            <p><strong>This tool has two methods to capture frames from videos:</strong></p>
+            <ol>
+                <li><strong>Canvas Method:</strong> Works with videos that support CORS (cross-origin resource sharing)</li>
+                <li><strong>Screenshot Method:</strong> Works with any video but captures the entire video player area</li>
+            </ol>
+            <p>For third-party videos like from JW Player, you'll likely need to use the Screenshot method.</p>
+        </div>
+        
+        <div class="controls">
+            <input type="text" id="videoUrl" placeholder="Enter video URL" value="https://cdn.jwplayer.com/videos/rCjZXPmi-gKSetTRu.mp4">
+            <button id="loadBtn">Load Video</button>
+        </div>
+        
+        <div class="cors-options">
+            <div class="checkbox-container">
+                <input type="checkbox" id="useCors" checked>
+                <label for="useCors">Try with CORS enabled</label>
+            </div>
+            <div class="warning-box" id="corsWarning">
+                <p><strong>Note:</strong> Cross-Origin Resource Sharing (CORS) restrictions may prevent capturing frames from videos hosted on other domains. If you get a "Tainted Canvas" error, use the Screenshot method below.</p>
+            </div>
+        </div>
+        
+        <div id="videoInfo"></div>
+        
+        <div class="video-container">
+            <video id="videoPlayer" controls>
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        
+        <div class="controls">
+            <div class="time-controls">
+                <span>Current Time:</span>
+                <span id="timeDisplay">00:00.000</span>
+            </div>
+            
+            <div class="frame-buttons">
+                <button id="prevFrameBtn" class="disabled">◀ Prev Frame</button>
+                <button id="captureBtn" class="disabled">Capture Frame</button>
+                <button id="nextFrameBtn" class="disabled">Next Frame ▶</button>
+            </div>
+            
+            <div class="time-jump">
+                <button id="back1s">-1s</button>
+                <button id="back01s">-0.1s</button>
+                <button id="forward01s">+0.1s</button>
+                <button id="forward1s">+1s</button>
+            </div>
+        </div>
+        
+        <div class="frame-container">
+            <div class="frame-info">
+                <p id="frameInfo">No frame captured yet</p>
+            </div>
+            <div id="corsError" class="error-box no-display">
+                <p><strong>CORS Error:</strong> Cannot access video data due to cross-origin restrictions. Try using the Screenshot method below.</p>
+            </div>
+            <canvas id="canvas"></canvas>
+            <div id="downloadContainer" style="display: none; margin-top: 10px;">
+                <button id="downloadBtn">Download Frame</button>
+                <select id="formatSelect" style="margin-left: 10px; padding: 8px;">
+                    <option value="image/png">PNG</option>
+                    <option value="image/jpeg">JPEG</option>
+                    <option value="image/webp">WebP</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="screenshot-container">
+            <h2>Alternative: Screenshot Method</h2>
+            <p>If the canvas method doesn't work due to CORS restrictions, you can use this method instead.</p>
+            <button id="screenshotBtn" class="disabled">Take Screenshot</button>
+            <div id="screenshotInfo" class="frame-info">
+                <p>No screenshot taken yet</p>
+            </div>
+            <canvas id="screenshotCanvas" style="display: none;"></canvas>
+            <div id="screenshotDownloadContainer" style="display: none; margin-top: 10px;">
+                <button id="screenshotDownloadBtn">Download Screenshot</button>
+                <select id="screenshotFormatSelect" style="margin-left: 10px; padding: 8px;">
+                    <option value="image/png">PNG</option>
+                    <option value="image/jpeg">JPEG</option>
+                    <option value="image/webp">WebP</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoUrl = document.getElementById('videoUrl');
+            const loadBtn = document.getElementById('loadBtn');
+            const timeDisplay = document.getElementById('timeDisplay');
+            const prevFrameBtn = document.getElementById('prevFrameBtn');
+            const nextFrameBtn = document.getElementById('nextFrameBtn');
+            const captureBtn = document.getElementById('captureBtn');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const frameInfo = document.getElementById('frameInfo');
+            const videoInfo = document.getElementById('videoInfo');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const downloadContainer = document.getElementById('downloadContainer');
+            const formatSelect = document.getElementById('formatSelect');
+            const useCors = document.getElementById('useCors');
+            const corsError = document.getElementById('corsError');
+            
+            // Screenshot elements
+            const screenshotBtn = document.getElementById('screenshotBtn');
+            const screenshotCanvas = document.getElementById('screenshotCanvas');
+            const screenshotCtx = screenshotCanvas.getContext('2d');
+            const screenshotInfo = document.getElementById('screenshotInfo');
+            const screenshotDownloadBtn = document.getElementById('screenshotDownloadBtn');
+            const screenshotDownloadContainer = document.getElementById('screenshotDownloadContainer');
+            const screenshotFormatSelect = document.getElementById('screenshotFormatSelect');
+            
+            // Frame navigation buttons
+            const back1s = document.getElementById('back1s');
+            const back01s = document.getElementById('back01s');
+            const forward01s = document.getElementById('forward01s');
+            const forward1s = document.getElementById('forward1s');
+            
+            // Frame stepping estimate (typically 1/30 or 1/24 second)
+            let frameTime = 1/30;
+            
+            // Toggle CORS attribute
+            useCors.addEventListener('change', function() {
+                if (this.checked) {
+                    videoPlayer.setAttribute('crossorigin', 'anonymous');
+                } else {
+                    videoPlayer.removeAttribute('crossorigin');
+                }
+                
+                // If there's a video already loaded, reload it
+                if (videoPlayer.src) {
+                    const currentTime = videoPlayer.currentTime;
+                    videoPlayer.load();
+                    
+                    // Restore current time after loading
+                    videoPlayer.onloadedmetadata = function() {
+                        videoPlayer.currentTime = currentTime;
+                        const oldOnloadedmetadata = videoPlayer.onloadedmetadata;
+                        videoPlayer.onloadedmetadata = oldOnloadedmetadata;
+                    };
+                }
+            });
+            
+            // Initial CORS setting
+            if (useCors.checked) {
+                videoPlayer.setAttribute('crossorigin', 'anonymous');
+            }
+            
+            // Load the video
+            loadBtn.addEventListener('click', function() {
+                const url = videoUrl.value.trim();
+                if (url) {
+                    videoPlayer.src = url;
+                    videoPlayer.load();
+                    enableButtons(false);
+                    videoInfo.textContent = "Loading video...";
+                    
+                    // Hide error message
+                    corsError.classList.add('no-display');
+                    canvas.style.display = 'none';
+                    downloadContainer.style.display = 'none';
+                    frameInfo.textContent = "No frame captured yet";
+                    
+                    // Hide screenshot
+                    screenshotCanvas.style.display = 'none';
+                    screenshotDownloadContainer.style.display = 'none';
+                    screenshotInfo.textContent = "No screenshot taken yet";
+                    
+                    // Set initial frame time to 1/30 second (common frame rate)
+                    // Will be adjusted once video metadata is loaded
+                    frameTime = 1/30;
+                    
+                    videoPlayer.onloadedmetadata = function() {
+                        const duration = videoPlayer.duration;
+                        const minutes = Math.floor(duration / 60);
+                        const seconds = Math.floor(duration % 60);
+                        const estimatedFrameRate = guessFrameRate(videoPlayer.duration);
+                        frameTime = 1 / estimatedFrameRate;
+                        
+                        videoInfo.textContent = `Duration: ${minutes}:${seconds.toString().padStart(2, '0')} | Estimated Frame Rate: ~${estimatedFrameRate.toFixed(2)} fps`;
+                        enableButtons(true);
+                    };
+                    
+                    videoPlayer.onerror = function() {
+                        videoInfo.textContent = "Error loading video. Please check the URL.";
+                        enableButtons(false);
+                    };
+                }
+            });
+            
+            // Guess the frame rate based on common values
+            function guessFrameRate(duration) {
+                // Common frame rates: 23.976, 24, 25, 29.97, 30, 50, 59.94, 60
+                // Default to 30 fps as a reasonable guess
+                return 30;
+            }
+            
+            // Update time display
+            videoPlayer.addEventListener('timeupdate', function() {
+                const time = videoPlayer.currentTime;
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60);
+                const milliseconds = Math.floor((time % 1) * 1000);
+                
+                timeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+            });
+            
+            // Previous frame
+            prevFrameBtn.addEventListener('click', function() {
+                if (!prevFrameBtn.classList.contains('disabled')) {
+                    videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - frameTime);
+                }
+            });
+            
+            // Next frame
+            nextFrameBtn.addEventListener('click', function() {
+                if (!nextFrameBtn.classList.contains('disabled')) {
+                    videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + frameTime);
+                }
+            });
+            
+            // Time jump buttons
+            back1s.addEventListener('click', function() {
+                videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 1);
+            });
+            
+            back01s.addEventListener('click', function() {
+                videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 0.1);
+            });
+            
+            forward01s.addEventListener('click', function() {
+                videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 0.1);
+            });
+            
+            forward1s.addEventListener('click', function() {
+                videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 1);
+            });
+            
+            // Capture frame
+            captureBtn.addEventListener('click', function() {
+                if (!captureBtn.classList.contains('disabled')) {
+                    captureFrame();
+                }
+            });
+            
+            // Screenshot button
+            screenshotBtn.addEventListener('click', function() {
+                if (!screenshotBtn.classList.contains('disabled')) {
+                    takeScreenshot();
+                }
+            });
+            
+            // Capture the current frame
+            function captureFrame() {
+                try {
+                    canvas.width = videoPlayer.videoWidth;
+                    canvas.height = videoPlayer.videoHeight;
+                    ctx.drawImage(videoPlayer, 0, 0, canvas.width, canvas.height);
+                    
+                    // Test if canvas is tainted
+                    try {
+                        // This will throw an error if the canvas is tainted
+                        canvas.toDataURL();
+                        
+                        // If we got here, canvas is not tainted
+                        corsError.classList.add('no-display');
+                        
+                        // Display frame info
+                        const time = videoPlayer.currentTime;
+                        const minutes = Math.floor(time / 60);
+                        const seconds = Math.floor(time % 60);
+                        const milliseconds = Math.floor((time % 1) * 1000);
+                        const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+                        
+                        frameInfo.textContent = `Frame at ${timeString} | Resolution: ${canvas.width}x${canvas.height}`;
+                        
+                        // Show canvas and download button
+                        canvas.style.display = 'block';
+                        downloadContainer.style.display = 'block';
+                    } catch (e) {
+                        // Canvas is tainted
+                        corsError.classList.remove('no-display');
+                        canvas.style.display = 'none';
+                        downloadContainer.style.display = 'none';
+                        console.error("CORS error: Canvas is tainted", e);
+                    }
+                } catch (e) {
+                    console.error("Error capturing frame", e);
+                    corsError.classList.remove('no-display');
+                }
+            }
+            
+            // Take a screenshot of the video element
+            function takeScreenshot() {
+                const videoRect = videoPlayer.getBoundingClientRect();
+                
+                // Set canvas dimensions to match video element's display size
+                screenshotCanvas.width = videoRect.width;
+                screenshotCanvas.height = videoRect.height;
+                
+                // Draw the video element to the canvas
+                screenshotCtx.drawImage(videoPlayer, 0, 0, screenshotCanvas.width, screenshotCanvas.height);
+                
+                // Display screenshot info
+                const time = videoPlayer.currentTime;
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60);
+                const milliseconds = Math.floor((time % 1) * 1000);
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+                
+                screenshotInfo.textContent = `Screenshot at ${timeString} | Size: ${screenshotCanvas.width}x${screenshotCanvas.height}`;
+                
+                // Show screenshot canvas and download button
+                screenshotCanvas.style.display = 'block';
+                screenshotDownloadContainer.style.display = 'block';
+            }
+            
+            // Download the captured frame
+            downloadBtn.addEventListener('click', function() {
+                const format = formatSelect.value;
+                const extension = format.split('/')[1];
+                const quality = format === 'image/jpeg' || format === 'image/webp' ? 0.9 : undefined;
+                
+                // Create a timestamp for the filename
+                const time = videoPlayer.currentTime;
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60);
+                const milliseconds = Math.floor((time % 1) * 1000);
+                const timeString = `${minutes.toString().padStart(2, '0')}-${seconds.toString().padStart(2, '0')}-${milliseconds.toString().padStart(3, '0')}`;
+                
+                // Get filename from video URL
+                const urlParts = videoUrl.value.split('/');
+                const videoFilename = urlParts[urlParts.length - 1].split('?')[0];
+                const baseFilename = videoFilename.substring(0, videoFilename.lastIndexOf('.')) || videoFilename;
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.download = `${baseFilename}_frame_${timeString}.${extension}`;
+                link.href = canvas.toDataURL(format, quality);
+                link.click();
+            });
+            
+            // Download the screenshot
+            screenshotDownloadBtn.addEventListener('click', function() {
+                const format = screenshotFormatSelect.value;
+                const extension = format.split('/')[1];
+                const quality = format === 'image/jpeg' || format === 'image/webp' ? 0.9 : undefined;
+                
+                // Create a timestamp for the filename
+                const time = videoPlayer.currentTime;
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60);
+                const milliseconds = Math.floor((time % 1) * 1000);
+                const timeString = `${minutes.toString().padStart(2, '0')}-${seconds.toString().padStart(2, '0')}-${milliseconds.toString().padStart(3, '0')}`;
+                
+                // Get filename from video URL
+                const urlParts = videoUrl.value.split('/');
+                const videoFilename = urlParts[urlParts.length - 1].split('?')[0];
+                const baseFilename = videoFilename.substring(0, videoFilename.lastIndexOf('.')) || videoFilename;
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.download = `${baseFilename}_screenshot_${timeString}.${extension}`;
+                link.href = screenshotCanvas.toDataURL(format, quality);
+                link.click();
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(event) {
+                if (document.activeElement.tagName.toLowerCase() !== 'input') {
+                    // Left arrow: previous frame
+                    if (event.key === 'ArrowLeft') {
+                        if (event.shiftKey) {
+                            videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 1);
+                        } else {
+                            videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - frameTime);
+                        }
+                        event.preventDefault();
+                    }
+                    
+                    // Right arrow: next frame
+                    if (event.key === 'ArrowRight') {
+                        if (event.shiftKey) {
+                            videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 1);
+                        } else {
+                            videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + frameTime);
+                        }
+                        event.preventDefault();
+                    }
+                    
+                    // Space: pause/play
+                    if (event.key === ' ') {
+                        if (videoPlayer.paused) {
+                            videoPlayer.play();
+                        } else {
+                            videoPlayer.pause();
+                        }
+                        event.preventDefault();
+                    }
+                    
+                    // C: capture frame
+                    if (event.key === 'c' || event.key === 'C') {
+                        if (!captureBtn.classList.contains('disabled')) {
+                            captureFrame();
+                        }
+                        event.preventDefault();
+                    }
+                    
+                    // S: take screenshot
+                    if (event.key === 's' || event.key === 'S') {
+                        if (!screenshotBtn.classList.contains('disabled')) {
+                            takeScreenshot();
+                        }
+                        event.preventDefault();
+                    }
+                }
+            });
+            
+            // Enable/disable buttons
+            function enableButtons(enable) {
+                const buttons = [prevFrameBtn, nextFrameBtn, captureBtn, screenshotBtn];
+                buttons.forEach(button => {
+                    if (enable) {
+                        button.classList.remove('disabled');
+                    } else {
+                        button.classList.add('disabled');
+                    }
+                });
+            }
+            
+            // Auto-load the default video URL
+            if (videoUrl.value.trim()) {
+                loadBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
