@@ -33,29 +33,35 @@
     </div>
     
     <script>
-      // Global variables
       let currentQuery = '';
-      let currentActiveTab = 0; // index of the currently active blueprint group
-      const perPage = 10; // Overall results per page
+      let currentActiveTab = 0; // index of the currently active group
+      const perPage = 10; // overall results per page
 
       // Create a new Typesense client instance
       const client = new Typesense.Client({
         nodes: [{
-          host: '48randmuz63vckgsp-1.a1.typesense.net',
+          host: 'ubd8iz2nk1536tf9p-1.a1.typesense.net',
           port: 443,
           protocol: 'https'
         }],
-        apiKey: '5IviyBY1ALf55bLWcU8AGfTsGqz7hY3t'
+        apiKey: 'jUVuMLjf7CCgV2ZVHRsfd5kgNex8oyL4'
       });
 
-      // Render the grouped search results (tabs + content)
+      // Render results by checking for grouped_hits; if missing, fallback to a single group.
       function renderResults(searchResults) {
         const resultsContainer = document.getElementById('results');
         resultsContainer.innerHTML = '';
 
+        // Use grouped_hits if present; otherwise, create one group with all hits.
+        let groups = [];
         if (searchResults.grouped_hits && searchResults.grouped_hits.length > 0) {
-          const groups = searchResults.grouped_hits;
-          // Create container for tabs and tab content.
+          groups = searchResults.grouped_hits;
+        } else if (searchResults.hits && searchResults.hits.length > 0) {
+          groups = [{ group_key: ["All"], hits: searchResults.hits }];
+        }
+        
+        if (groups.length > 0) {
+          // Create tabs and content containers.
           const tabsDiv = document.createElement('div');
           tabsDiv.id = 'tabs';
           tabsDiv.appendChild(renderTabs(groups));
@@ -68,20 +74,20 @@
         } else {
           resultsContainer.innerHTML = '<p class="text-gray-600">No results found.</p>';
         }
-
-        // Render overall pagination controls below the grouped results.
+        
+        // Render pagination controls.
         const totalPages = Math.ceil(searchResults.found / perPage);
         const currentPage = searchResults.page || 1;
         resultsContainer.appendChild(renderPagination(currentPage, totalPages));
       }
 
-      // Render the tab headers for each blueprint group.
+      // Render tab headers based on the group keys.
       function renderTabs(groups) {
         const tabsContainer = document.createElement('div');
         tabsContainer.className = "flex border-b border-gray-300 mb-4";
         groups.forEach((group, index) => {
           const tabButton = document.createElement('button');
-          // Use the first value in group_key as the group name.
+          // Use the first value of group_key if available.
           let groupValue = (group.group_key && group.group_key.length > 0) ? group.group_key[0] : "N/A";
           tabButton.textContent = groupValue;
           tabButton.className = "px-4 py-2 focus:outline-none";
@@ -100,7 +106,7 @@
         return tabsContainer;
       }
 
-      // Render the content for the currently active tab (group).
+      // Render the content for the currently active tab.
       function renderTabContent(groups) {
         const tabContentContainer = document.createElement('div');
         const activeGroup = groups[currentActiveTab];
@@ -110,11 +116,11 @@
         }
         activeGroup.hits.forEach(hit => {
           const doc = hit.document;
-          // Remove "entry::" prefix from the id.
+          // Remove the "entry::" prefix from the id.
           const nodeId = doc.id.replace(/^entry::/, '');
           const resultDiv = document.createElement('div');
           resultDiv.className = "pb-4 border-b border-gray-200";
-
+          
           // Title as clickable link.
           const titleLink = document.createElement('a');
           titleLink.href = `https://www.tvmidtvest.dk/node/${nodeId}`;
@@ -122,14 +128,14 @@
           titleLink.className = "text-xl font-bold text-blue-700 hover:underline";
           titleLink.textContent = doc.full_title || "Untitled";
           resultDiv.appendChild(titleLink);
-
+          
           // URL display.
           const urlDisplay = document.createElement('div');
           urlDisplay.className = "text-green-600 text-sm mt-1";
           urlDisplay.textContent = `https://www.tvmidtvest.dk/node/${nodeId}`;
           resultDiv.appendChild(urlDisplay);
-
-          // Published date (in Danish format).
+          
+          // Published date (formatted in Danish style).
           if (doc.published_date) {
             const dateDiv = document.createElement('div');
             dateDiv.className = "text-gray-600 text-sm mt-1";
@@ -138,19 +144,19 @@
             dateDiv.textContent = formattedDate;
             resultDiv.appendChild(dateDiv);
           }
-
+          
           // Summary.
           const summaryPara = document.createElement('p');
           summaryPara.className = "text-gray-700 mt-2 text-sm";
           summaryPara.textContent = doc.summary || "No summary available.";
           resultDiv.appendChild(summaryPara);
-
+          
           tabContentContainer.appendChild(resultDiv);
         });
         return tabContentContainer;
       }
 
-      // Update the tabs header (active state) after a tab is clicked.
+      // Update tabs header (active state).
       function updateTabs(groups) {
         const tabsDiv = document.getElementById('tabs');
         if (tabsDiv) {
@@ -159,7 +165,7 @@
         }
       }
 
-      // Update the content for the currently active tab.
+      // Update the content area for the active tab.
       function updateTabContent(groups) {
         const tabContentDiv = document.getElementById('tab-content');
         if (tabContentDiv) {
@@ -168,11 +174,10 @@
         }
       }
 
-      // Render pagination controls using Tailwind classes.
+      // Render pagination controls.
       function renderPagination(currentPage, totalPages) {
         const paginationContainer = document.createElement('div');
         paginationContainer.className = "mt-6 flex items-center justify-center space-x-4";
-
         if (currentPage > 1) {
           const prevButton = document.createElement('button');
           prevButton.textContent = 'Previous';
@@ -180,12 +185,10 @@
           prevButton.addEventListener('click', () => performSearch(currentQuery, currentPage - 1));
           paginationContainer.appendChild(prevButton);
         }
-
         const pageInfo = document.createElement('span');
         pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
         pageInfo.className = "text-gray-600";
         paginationContainer.appendChild(pageInfo);
-
         if (currentPage < totalPages) {
           const nextButton = document.createElement('button');
           nextButton.textContent = 'Next';
@@ -193,17 +196,14 @@
           nextButton.addEventListener('click', () => performSearch(currentQuery, currentPage + 1));
           paginationContainer.appendChild(nextButton);
         }
-
         return paginationContainer;
       }
 
-      // Perform search using the provided query and page number.
+      // Perform search with grouping by blueprint.
       function performSearch(query, page = 1) {
         currentQuery = query;
-        // Reset active tab on a new search.
         currentActiveTab = 0;
         document.getElementById('results').innerHTML = '<p class="text-gray-600">Loading results...</p>';
-
         client.collections('public').documents().search({
           q: query,
           preset: 'public',
@@ -221,7 +221,7 @@
         });
       }
 
-      // Event listener for search form submission.
+      // Event listener for form submission.
       document.getElementById('search-form').addEventListener('submit', function(event) {
         event.preventDefault();
         const query = document.getElementById('search-input').value;
