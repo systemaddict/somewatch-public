@@ -48,7 +48,7 @@
           <a :href="'https://www.tvsyd.dk/node/' + result.document.id.replace(/^entry::/, '')" 
              target="_blank" 
              class="text-xl font-bold text-blue-700 hover:underline" 
-             x-text="result.document.full_title || 'Untitled'"></a>
+             x-text="result.document.title || 'Untitled'"></a>
           
           <div class="text-green-600 text-sm mt-1" 
                x-text="'https://www.tvsyd.dk/node/' + result.document.id.replace(/^entry::/, '')"></div>
