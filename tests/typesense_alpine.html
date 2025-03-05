@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>TV MidtVest Search with Alpine.js</title>
+  <title>TV SYD Search with Alpine.js</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Alpine.js -->
@@ -45,7 +45,7 @@
       <!-- Results -->
       <template x-for="result in results" :key="result.document.id">
         <div class="pb-4 border-b border-gray-200">
-          <a :href="'https://www.tvmidtvest.dk/node/' + result.document.id.replace(/^entry::/, '')" 
+          <a :href="'https://www.tvsyd.dk/node/' + result.document.id.replace(/^entry::/, '')" 
              target="_blank" 
              class="text-xl font-bold text-blue-700 hover:underline" 
              x-text="result.document.full_title || 'Untitled'"></a>
