@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TV MidtVest Search with Alpine.js</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Typesense client -->
+  <script src="https://cdn.jsdelivr.net/npm/typesense@2/dist/typesense.min.js"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="max-w-3xl mx-auto p-6" x-data="searchApp()">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">TV MidtVest Search</h1>
+    
+    <!-- Search Form -->
+    <form class="mb-6 flex space-x-2" @submit.prevent="search">
+      <input
+        x-model="query"
+        type="text"
+        placeholder="Enter search query"
+        required
+        class="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        Search
+      </button>
+    </form>
+    
+    <!-- Results Container -->
+    <div class="space-y-6">
+      <!-- Loading state -->
+      <p x-show="loading" class="text-gray-600">Loading results...</p>
+      
+      <!-- Error state -->
+      <p x-show="error" class="text-red-600">Error loading results.</p>
+      
+      <!-- Empty state -->
+      <p x-show="!loading && !error && results.length === 0 && searched" class="text-gray-600">No results found.</p>
+      
+      <!-- Initial state -->
+      <p x-show="!loading && !error && !searched" class="text-gray-600">Please enter a query to search.</p>
+      
+      <!-- Results -->
+      <template x-for="result in results" :key="result.document.id">
+        <div class="pb-4 border-b border-gray-200">
+          <a :href="'https://www.tvmidtvest.dk/node/' + result.document.id.replace(/^entry::/, '')" 
+             target="_blank" 
+             class="text-xl font-bold text-blue-700 hover:underline" 
+             x-text="result.document.full_title || 'Untitled'"></a>
+          
+          <div class="text-green-600 text-sm mt-1" 
+               x-text="'https://www.tvmidtvest.dk/node/' + result.document.id.replace(/^entry::/, '')"></div>
+          
+          <div x-show="result.document.published_date" 
+               class="text-gray-600 text-sm mt-1" 
+               x-text="formatDate(result.document.published_date)"></div>
+          
+          <p class="text-gray-700 mt-2 text-sm" 
+             x-text="result.document.summary || 'No summary available.'"></p>
+        </div>
+      </template>
+      
+      <!-- Pagination -->
+      <div x-show="totalPages > 0" class="mt-6 flex items-center justify-center space-x-4">
+        <button 
+          x-show="currentPage > 1" 
+          @click="changePage(currentPage - 1)" 
+          class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+          Previous
+        </button>
+        
+        <span class="text-gray-600" x-text="`Page ${currentPage} of ${totalPages}`"></span>
+        
+        <button 
+          x-show="currentPage < totalPages" 
+          @click="changePage(currentPage + 1)" 
+          class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function searchApp() {
+      return {
+        // State variables
+        query: '',
+        results: [],
+        loading: false,
+        error: false,
+        searched: false,
+        currentPage: 1,
+        totalPages: 0,
+        totalFound: 0,
+        perPage: 10,
+        
+        // Typesense client
+        client: new Typesense.Client({
+          nodes: [{
+            host: '48randmuz63vckgsp-1.a1.typesense.net',
+            port: 443,
+            protocol: 'https'
+          }],
+          apiKey: '5IviyBY1ALf55bLWcU8AGfTsGqz7hY3t'
+        }),
+        
+        // Initialize the app
+        init() {
+          // Nothing to initialize
+        },
+        
+        // Search function
+        search() {
+          if (!this.query.trim()) return;
+          
+          this.performSearch(1);
+        },
+        
+        // Change page
+        changePage(page) {
+          this.performSearch(page);
+        },
+        
+        // Execute search
+        performSearch(page) {
+          this.loading = true;
+          this.error = false;
+          this.currentPage = page;
+          
+          this.client.collections('public').documents().search({
+            q: this.query,
+            preset: 'public',
+            page: page,
+            per_page: this.perPage
+          })
+          .then(response => {
+            this.results = response.hits;
+            this.totalFound = response.found;
+            this.totalPages = Math.ceil(response.found / this.perPage);
+            this.searched = true;
+            this.loading = false;
+          })
+          .catch(err => {
+            console.error('Search error:', err);
+            this.error = true;
+            this.loading = false;
+          });
+        },
+        
+        // Format date
+        formatDate(timestamp) {
+          if (!timestamp) return '';
+          
+          const date = new Date(timestamp * 1000);
+          return date.toLocaleDateString('da-DK', { 
+            day: 'numeric', 
+            month: 'short', 
+            year: 'numeric' 
+          });
+        }
+      };
+    }
+  </script>
+</body>
+</html>
