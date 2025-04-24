@@ -1,11 +1,48 @@
-<!-- 1. Add CSS to `<head>` -->
-<link href="https://releases.transloadit.com/uppy/v4.13.3/uppy.min.css" rel="stylesheet">
-
-<!-- 2. Initialize -->
-<div id="uppy"></div>
-
+<!-- This pulls Uppy from our CDN -->
+<!-- For smaller self-hosted bundles, install Uppy and plugins manually: -->
+<!-- npm i --save @uppy/core @uppy/dashboard @uppy/remote-sources @uppy/transloadit ... -->
+<link
+  href="https://releases.transloadit.com/uppy/v4.3.1/uppy.min.css"
+  rel="stylesheet"
+/>
+<button id="browse">Select Files</button>
 <script type="module">
-  import { Uppy, Dashboard } from "https://releases.transloadit.com/uppy/v4.13.3/uppy.min.mjs"
+  import {
+    Uppy,
+    Dashboard,
+    ImageEditor,
+    RemoteSources,
+    Transloadit,
+  } from 'https://releases.transloadit.com/uppy/v4.3.1/uppy.min.mjs'
   const uppy = new Uppy()
-  uppy.use(Dashboard, { target: '#uppy', inline: true })
+    .use(Transloadit, {
+      waitForEncoding: true,
+      alwaysRunAssembly: true,
+      assemblyOptions: {
+        params: {
+          template_id: '8244d6bc4eb44148910bf1d493d67b8b',
+          // To avoid tampering, use Signature Authentication:
+          // https://transloadit.com/docs/api/authentication/
+          /*auth: {
+            key: 'YOUR_TRANSLOADIT_KEY',
+          },*/
+        },
+      },
+    })
+    .use(Dashboard, { trigger: '#browse' })
+    .use(ImageEditor, { target: Dashboard })
+    .use(RemoteSources, {
+      companionUrl: 'https://api2.transloadit.com/companion',
+    })
+    .on('complete', ({ transloadit }) => {
+      // Due to waitForEncoding:true this is fired after encoding is done.
+      // Alternatively, set waitForEncoding to false and provide a notify_url
+      console.log(transloadit) // Array of Assembly Statuses
+      transloadit.forEach((assembly) => {
+        console.log(assembly.results) // Array of all encoding results
+      })
+    })
+    .on('error', (error) => {
+      console.error(error)
+    })
 </script>
