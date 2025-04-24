@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inline Uppy Dashboard with Transloadit</title>
+    <title>Raw File Upload with Uppy</title>
     <!-- Pull Uppy from CDN -->
     <link href="https://releases.transloadit.com/uppy/v4.13.3/uppy.min.css" rel="stylesheet" />
     <style>
@@ -30,8 +30,8 @@
     </style>
 </head>
 <body>
-    <h1>Uppy + Transloadit</h1>
-    <p>The dashboard appears inline without requiring a button click.</p>
+    <h1>Raw File Upload (No Processing)</h1>
+    <p>Files will be uploaded without any additional processing.</p>
     
     <!-- This div is where the inline Dashboard will appear -->
     <div id="uppy-dashboard" class="upload-container"></div>
@@ -43,8 +43,6 @@
         import {
             Uppy,
             Dashboard,
-            ImageEditor,
-            RemoteSources,
             Transloadit,
         } from 'https://releases.transloadit.com/uppy/v4.13.3/uppy.min.mjs'
         
@@ -52,55 +50,40 @@
         
         const uppy = new Uppy()
             .use(Transloadit, {
-                waitForEncoding: true,
+                waitForEncoding: false, // Don't wait for encoding to finish
                 alwaysRunAssembly: true,
                 assemblyOptions: {
                     params: {
-                        template_id: '8244d6bc4eb44148910bf1d493d67b8b',
-                        // To avoid tampering, use Signature Authentication:
-                        // https://transloadit.com/docs/api/authentication/
+                        // Simple template that only imports files without any processing
+                        steps: {
+                            ":original": {
+                                "robot": "/upload/handle"
+                            }
+                        },
                         auth: {
-                            key: 'tv2reg',
+                            key: 'tv2reg', // Your Transloadit key
                         },
                     },
                 },
             })
             .use(Dashboard, {
-                inline: true,                // This makes it appear without a click
-                target: '#uppy-dashboard', // The element where Dashboard should be rendered
-                height: 450,                // Adjust height as needed
+                inline: true,
+                target: '#uppy-dashboard',
+                height: 450,
                 showProgressDetails: true,
                 proudlyDisplayPoweredByUppy: true
             })
-            .use(ImageEditor, { target: Dashboard })
-            .use(RemoteSources, {
-                companionUrl: 'https://api2.transloadit.com/companion',
+            .on('upload-success', (file, response) => {
+                console.log('Upload success:', file.name);
+                resultsElement.textContent = `Upload Complete: ${file.name}\n\nNo processing was performed - raw file uploaded successfully.`;
             })
-            .on('complete', ({ transloadit }) => {
-                // Due to waitForEncoding:true this is fired after encoding is done.
-                // Alternatively, set waitForEncoding to false and provide a notify_url
-                console.log(transloadit) // Array of Assembly Statuses
-                
-                // Display results in the UI
-                let resultText = 'Upload Complete!\n\n';
-                
-                transloadit.forEach((assembly, index) => {
-                    resultText += `Assembly ${index + 1} ID: ${assembly.assembly_id}\n`;
-                    resultText += `Results:\n${JSON.stringify(assembly.results, null, 2)}\n\n`;
-                    console.log(assembly.results) // Array of all encoding results
-                });
-                
-                resultsElement.textContent = resultText;
+            .on('complete', ({ successful }) => {
+                console.log('All uploads completed:', successful.length, 'successful files');
             })
             .on('error', (error) => {
                 console.error(error);
                 resultsElement.textContent = `Error: ${error.message || 'Unknown error'}`;
             });
-            
-        // You can also log when files are added
-        uppy.on('file-added', (file) => {
-            console.log('File added:', file.name);
-        });
     </script>
 </body>
 </html>
