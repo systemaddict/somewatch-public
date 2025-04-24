@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raw File Upload with Uppy</title>
+    <title>Uppy + Transloadit (No Encoding Wait)</title>
     <!-- Pull Uppy from CDN -->
     <link href="https://releases.transloadit.com/uppy/v4.13.3/uppy.min.css" rel="stylesheet" />
     <style>
@@ -30,8 +30,8 @@
     </style>
 </head>
 <body>
-    <h1>Raw File Upload (No Processing)</h1>
-    <p>Files will be uploaded without any additional processing.</p>
+    <h1>Uppy + Transloadit</h1>
+    <p>Files are processed through your template but without waiting for encoding.</p>
     
     <!-- This div is where the inline Dashboard will appear -->
     <div id="uppy-dashboard" class="upload-container"></div>
@@ -43,6 +43,8 @@
         import {
             Uppy,
             Dashboard,
+            ImageEditor,
+            RemoteSources,
             Transloadit,
         } from 'https://releases.transloadit.com/uppy/v4.13.3/uppy.min.mjs'
         
@@ -50,18 +52,15 @@
         
         const uppy = new Uppy()
             .use(Transloadit, {
-                waitForEncoding: false, // Don't wait for encoding to finish
+                waitForEncoding: false,  // Don't wait for encoding to finish
                 alwaysRunAssembly: true,
                 assemblyOptions: {
                     params: {
-                        // Simple template that only imports files without any processing
-                        steps: {
-                            ":original": {
-                                "robot": "/upload/handle"
-                            }
-                        },
+                        template_id: '8244d6bc4eb44148910bf1d493d67b8b',
+                        // To avoid tampering, use Signature Authentication:
+                        // https://transloadit.com/docs/api/authentication/
                         auth: {
-                            key: 'tv2reg', // Your Transloadit key
+                            key: 'tv2reg',
                         },
                     },
                 },
@@ -73,9 +72,20 @@
                 showProgressDetails: true,
                 proudlyDisplayPoweredByUppy: true
             })
+            .use(ImageEditor, { target: Dashboard })
+            .use(RemoteSources, {
+                companionUrl: 'https://api2.transloadit.com/companion',
+            })
             .on('upload-success', (file, response) => {
-                console.log('Upload success:', file.name);
-                resultsElement.textContent = `Upload Complete: ${file.name}\n\nNo processing was performed - raw file uploaded successfully.`;
+                // This event fires when the file is uploaded to Transloadit
+                // but before encoding is complete
+                console.log('File uploaded successfully:', file.name);
+                console.log('Assembly ID:', response.transloadit[0].assembly_id);
+                
+                resultsElement.textContent = `File uploaded: ${file.name}\n\n` +
+                    `Assembly ID: ${response.transloadit[0].assembly_id}\n\n` +
+                    `The file is being processed by Transloadit in the background using your template, ` +
+                    `but we're not waiting for encoding to complete.`;
             })
             .on('complete', ({ successful }) => {
                 console.log('All uploads completed:', successful.length, 'successful files');
@@ -84,6 +94,11 @@
                 console.error(error);
                 resultsElement.textContent = `Error: ${error.message || 'Unknown error'}`;
             });
+            
+        // Optional: track assembly status separately
+        uppy.on('transloadit:assembly-created', (assembly) => {
+            console.log('Assembly created:', assembly.assembly_id);
+        });
     </script>
 </body>
 </html>
