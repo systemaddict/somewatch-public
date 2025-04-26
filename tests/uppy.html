@@ -70,7 +70,25 @@
                 target: '#uppy-dashboard',
                 height: 450,
                 showProgressDetails: true,
-                proudlyDisplayPoweredByUppy: true
+                proudlyDisplayPoweredByUppy: true,
+                metaFields: [
+                    { id: 'name', name: 'Name', placeholder: 'file name' },
+                    { id: 'license', name: 'License', placeholder: 'specify license' },
+                    { id: 'caption', name: 'Caption', placeholder: 'describe what the image is about' },
+                    {
+                        id: 'public',
+                        name: 'Public',
+                        render({ value, onChange, required, form }, h) {
+                            return h('input', {
+                                type: 'checkbox',
+                                required,
+                                form,
+                                onChange: (ev) => onChange(ev.target.checked ? 'on' : ''),
+                                defaultChecked: value === 'on',
+                            });
+                        },
+                    },
+                ]
             })
             .use(ImageEditor, { target: Dashboard })
             .use(RemoteSources, {
