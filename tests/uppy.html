@@ -94,65 +94,6 @@
             .use(RemoteSources, {
                 companionUrl: 'https://api2.transloadit.com/companion',
             })
-            .on('upload-success', (file, response) => {
-                // Safe debugging - log the entire response structure
-                console.log('File uploaded successfully:', file.name);
-                console.log('Upload response:', response);
-                
-                // Display the full response structure to understand what we're getting
-                let responseText = `File uploaded: ${file.name}\n\n`;
-                responseText += `Response structure:\n${JSON.stringify(response, null, 2)}\n\n`;
-                
-                // Safe way to extract assembly ID if it exists in the expected structure
-                let assemblyId = "Unknown";
-                try {
-                    if (response.transloadit && 
-                        Array.isArray(response.transloadit) && 
-                        response.transloadit.length > 0 &&
-                        response.transloadit[0].assembly_id) {
-                            assemblyId = response.transloadit[0].assembly_id;
-                    } else if (response.assembly_id) {
-                        assemblyId = response.assembly_id;
-                    } else if (typeof response === 'object') {
-                        // Try to find assembly_id anywhere in the response
-                        const findAssemblyId = (obj) => {
-                            for (const key in obj) {
-                                if (key === 'assembly_id') return obj[key];
-                                if (typeof obj[key] === 'object' && obj[key] !== null) {
-                                    const result = findAssemblyId(obj[key]);
-                                    if (result) return result;
-                                }
-                            }
-                            return null;
-                        };
-                        const foundId = findAssemblyId(response);
-                        if (foundId) assemblyId = foundId;
-                    }
-                } catch (err) {
-                    console.error('Error extracting assembly ID:', err);
-                }
-                
-                responseText += `Assembly ID: ${assemblyId}\n\n`;
-                responseText += `The file is being processed by Transloadit in the background.`;
-                
-                resultsElement.textContent = responseText;
-            })
-            .on('transloadit:assembly-created', (assembly) => {
-                console.log('Assembly created:', assembly);
-                resultsElement.textContent += `\n\nAssembly created: ${assembly.assembly_id}`;
-            })
-            .on('complete', ({ successful, failed }) => {
-                console.log('All uploads completed:', successful.length, 'successful files');
-                console.log('Failed uploads:', failed.length);
-                
-                if (failed.length > 0) {
-                    console.error('Failed files:', failed);
-                }
-            })
-            .on('error', (error) => {
-                console.error('Error:', error);
-                resultsElement.textContent = `Error: ${error.message || 'Unknown error'}`;
-            });
     </script>
 </body>
 </html>
