@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Media Selector/Uploader</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Uppy CSS -->
+  <link href="https://releases.transloadit.com/uppy/v4.13.3/uppy.min.css" rel="stylesheet" />
+  <style>
+    .uppy-Dashboard { width: 100% !important; max-width: 100% !important; }
+    .uppy-Dashboard-inner { width: 100% !important; }
+  </style>
+</head>
+<body class="bg-gray-100 p-6">
+  <div x-data="mediaDialog()" class="max-w-md mx-auto bg-white rounded-lg shadow-lg">
+    <div class="flex border-b">
+      <button :class="tab==='image'?active:''" @click="tab='image'" class="flex-1 py-2 text-center">Image</button>
+      <button :class="tab==='video'?active:''" @click="tab='video'" class="flex-1 py-2 text-center">Video</button>
+      <button :class="tab==='upload'?active:''" @click="tab='upload'" class="flex-1 py-2 text-center">Upload</button>
+    </div>
+    <div class="p-4">
+      <!-- Image Tab -->
+      <div x-show="tab==='image'">
+        <input x-model="query" @keydown.enter="searchImages()" type="text" placeholder="Search images..." class="w-full px-3 py-2 border rounded" />
+        <div class="mt-4 grid grid-cols-3 gap-2">
+          <template x-for="img in images" :key="img.id">
+            <div class="border rounded overflow-hidden">
+              <img :src="img.src" alt="" class="object-cover h-24 w-full" />
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- Video Tab -->
+      <div x-show="tab==='video'">
+        <input x-model="query" @keydown.enter="searchVideos()" type="text" placeholder="Search videos..." class="w-full px-3 py-2 border rounded" />
+        <div class="mt-4 grid grid-cols-1 gap-4">
+          <template x-for="vid in videos" :key="vid.id">
+            <div class="border rounded overflow-hidden">
+              <video :src="vid.src" controls class="w-full h-32"></video>
+            </div>
+          </template>
+        </div>
+      </div>
+      <!-- Upload Tab -->
+      <div x-show="tab==='upload'">
+        <div id="uppy-dashboard"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Uppy JS -->
+  <script src="https://releases.transloadit.com/uppy/v4.13.3/uppy.min.js"></script>
+  <script src="https://releases.transloadit.com/uppy/locales/v3.3.1/da_DK.min.js"></script>
+  <script>
+    function mediaDialog() {
+      return {
+        tab: 'image',
+        query: '',
+        images: [],
+        videos: [],
+        active: 'border-b-2 border-blue-500 text-blue-600',
+        init() {
+          this.searchImages();
+          this.searchVideos();
+          const photographers = [
+            { title: "Chat GPT", id: "05932ba5-9904-42f9-aff7-4062f91b176c" },
+            { title: "Henning Bagger / Ritzau Scanpix", id: "885078ef-7275-4efc-a63d-eb3398791306" },
+            { title: "Lind foto", id: "99646626-7e5e-4158-a68e-1ef8096ad78c" },
+            { title: "Anders Garde", id: "ab50e8a9-5e96-4e53-9350-75b456ee421b" },
+            { title: "Martin Stilling", id: "ed53368b-ebcb-4ea3-854d-f6791b378da3" }
+          ];
+          window.REGION = 'east';
+          window.UPLOAD_API_KEY = 'whateverkey';
+
+          const uppy = new Uppy.Core({
+            restrictions: { requiredMetaFields: ['title','caption'] },
+            meta: { title:'', caption:'', photographer:'', region:window.REGION },
+            locale: Uppy.locales.da_DK
+          })
+          .use(Uppy.Compressor)
+          .use(Uppy.Dashboard, {
+            inline: true,
+            target: '#uppy-dashboard',
+            showProgressDetails: true,
+            proudlyDisplayPoweredByUppy: false,
+            note: 'Hvor står du henne?',
+            metaFields: [
+              { id:'title', name:'Titel', placeholder:'Indtast titel' },
+              { id:'caption', name:'Billedtekst', placeholder:'Indtast billedtekst' },
+              { id:'photographer', name:'Fotograf', render: ({ value, onChange, fieldCSSClasses }, h) => {
+                  return h('select',{ class:fieldCSSClasses.text, value, name:'photographer', onChange: e=>onChange(e.target.value), 'data-uppy-super-focusable':true },[
+                    h('option',{ value:'' },'Vælg fotograf'),
+                    ...photographers.map(p=>h('option',{ value:p.id, selected:p.id===value },p.title))
+                  ]);
+                }
+              }
+            ]
+          })
+          .use(Uppy.AwsS3, { endpoint:'/', headers:{ 'X-Upload-Key':window.UPLOAD_API_KEY }});
+
+          uppy.on('complete', result => {
+            console.log('Upload fuldført! Resultater:', result);
+            uppy.getPlugin('Dashboard').setOptions({ note: `DONE!!!!!!` });
+          });
+        },
+        searchImages() {
+          this.images = Array.from({ length: 9 }, (_, i) => ({ id: i, src: `https://via.placeholder.com/150?text=Img+${i+1}` }));
+        },
+        searchVideos() {
+          this.videos = Array.from({ length: 3 }, (_, i) => ({ id: i, src: `https://www.w3schools.com/html/mov_bbb.mp4#t=${i}` }));
+        }
+      }
+    }
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('mediaDialog', mediaDialog);
+    });
+  </script>
+</body>
+</html>
