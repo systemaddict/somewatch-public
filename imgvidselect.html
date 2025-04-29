@@ -71,7 +71,7 @@
         active: 'border-b-2 border-blue-500 text-blue-600',
         init() {
           this.searchImages(); this.searchVideos();
-          const uppy = Uppy({
+          const uppy = new Uppy.Uppy({
             restrictions: { requiredMetaFields: ['title','caption'] },
             meta: { title:'', caption:'', photographer:'', region:window.REGION, user:window.USER },
             locale: Uppy.locales.da_DK
