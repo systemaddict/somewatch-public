@@ -11,12 +11,16 @@
   <!-- Uppy CSS -->
   <link href="https://releases.transloadit.com/uppy/v4.13.3/uppy.min.css" rel="stylesheet" />
   <style>
-    .uppy-Dashboard { width: 100% !important; max-width: 100% !important; }
-    .uppy-Dashboard-inner { width: 100% !important; }
+    /* Make dashboard full width */
+    .uppy-Dashboard { width: 100% !important; max-width: 100% !important; height: auto !important; }
+    .uppy-Dashboard-inner { width: 100% !important; max-width: none !important; height: auto !important; min-height: 450px !important; }
+    .uppy-Dashboard-innerWrap { width: 100% !important; }
+    [data-uppy-theme="light"] { width: 100% !important; }
+    #uppy-dashboard { width: 100% !important; }
   </style>
 </head>
 <body class="bg-gray-100 p-6">
-  <div x-data="mediaDialog()" class="max-w-md mx-auto bg-white rounded-lg shadow-lg">
+  <div x-data="mediaDialog()" class="max-w-md mx-auto bg-white rounded-lg shadow-lg" x-init="init()">
     <div class="flex border-b">
       <button :class="tab==='image'?active:''" @click="tab='image'" class="flex-1 py-2 text-center">Image</button>
       <button :class="tab==='video'?active:''" @click="tab='video'" class="flex-1 py-2 text-center">Video</button>
@@ -56,6 +60,11 @@
   <script src="https://releases.transloadit.com/uppy/v4.13.3/uppy.min.js"></script>
   <script src="https://releases.transloadit.com/uppy/locales/v3.3.1/da_DK.min.js"></script>
   <script>
+    // Config vars (replace with actual values)
+    window.UPLOAD_API_KEY = 'your-api-key';
+    window.REGION = 'your-region';
+    window.USER = 'user@example.com';
+
     function mediaDialog() {
       return {
         tab: 'image',
@@ -67,18 +76,16 @@
           this.searchImages();
           this.searchVideos();
           const photographers = [
-            { title: "Chat GPT", id: "05932ba5-9904-42f9-aff7-4062f91b176c" },
-            { title: "Henning Bagger / Ritzau Scanpix", id: "885078ef-7275-4efc-a63d-eb3398791306" },
-            { title: "Lind foto", id: "99646626-7e5e-4158-a68e-1ef8096ad78c" },
-            { title: "Anders Garde", id: "ab50e8a9-5e96-4e53-9350-75b456ee421b" },
-            { title: "Martin Stilling", id: "ed53368b-ebcb-4ea3-854d-f6791b378da3" }
+            { title: 'Chat GPT', id: '05932ba5-9904-42f9-aff7-4062f91b176c' },
+            { title: 'Henning Bagger / Ritzau Scanpix', id: '885078ef-7275-4efc-a63d-eb3398791306' },
+            { title: 'Lind foto', id: '99646626-7e5e-4158-a68e-1ef8096ad78c' },
+            { title: 'Anders Garde', id: 'ab50e8a9-5e96-4e53-9350-75b456ee421b' },
+            { title: 'Martin Stilling', id: 'ed53368b-ebcb-4ea3-854d-f6791b378da3' }
           ];
-          window.REGION = 'east';
-          window.UPLOAD_API_KEY = 'whateverkey';
 
           const uppy = new Uppy.Core({
             restrictions: { requiredMetaFields: ['title','caption'] },
-            meta: { title:'', caption:'', photographer:'', region:window.REGION },
+            meta: { title:'', caption:'', photographer:'', region:window.REGION, user:window.USER },
             locale: Uppy.locales.da_DK
           })
           .use(Uppy.Compressor)
@@ -87,7 +94,8 @@
             target: '#uppy-dashboard',
             showProgressDetails: true,
             proudlyDisplayPoweredByUppy: false,
-            note: 'Hvor står du henne?',
+            note: 'Drag & drop or click to select files',
+            width: '100%',
             metaFields: [
               { id:'title', name:'Titel', placeholder:'Indtast titel' },
               { id:'caption', name:'Billedtekst', placeholder:'Indtast billedtekst' },
@@ -100,11 +108,10 @@
               }
             ]
           })
-          .use(Uppy.AwsS3, { endpoint:'/', headers:{ 'X-Upload-Key':window.UPLOAD_API_KEY }});
+          .use(Uppy.AwsS3, { endpoint:'https://tools-uppy.nwrasl.easypanel.host/', headers:{ 'X-Upload-Key':window.UPLOAD_API_KEY }});
 
           uppy.on('complete', result => {
             console.log('Upload fuldført! Resultater:', result);
-            uppy.getPlugin('Dashboard').setOptions({ note: `DONE!!!!!!` });
           });
         },
         searchImages() {
@@ -115,9 +122,7 @@
         }
       }
     }
-    document.addEventListener('alpine:init', () => {
-      Alpine.data('mediaDialog', mediaDialog);
-    });
+    document.addEventListener('alpine:init', () => Alpine.data('mediaDialog', mediaDialog));
   </script>
 </body>
 </html>
