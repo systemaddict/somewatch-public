@@ -8,7 +8,7 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link href="https://releases.transloadit.com/uppy/v4.13.3/uppy.min.css" rel="stylesheet" />
   <style>
-    /* Only override width to avoid height constraints */
+    /* width only */
     .uppy-Dashboard,
     .uppy-Dashboard-inner,
     .uppy-Dashboard-innerWrap,
@@ -18,6 +18,8 @@
       max-width: none !important;
     }
   </style>
+  <!-- Typesense JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/typesense@0.24.0/dist/typesense.umd.min.js"></script>
 </head>
 <body class="bg-gray-100 p-6">
   <div x-data="mediaDialog()" class="max-w-md mx-auto bg-white rounded-lg shadow-lg">
@@ -27,64 +29,84 @@
       <button :class="tab==='upload'?active:''" @click="tab='upload'" class="flex-1 py-2 text-center">Upload</button>
     </div>
     <div class="p-4">
+      <!-- Image Tab -->
       <div x-show="tab==='image'">
-        <input x-model="query" @keydown.enter="searchImages()" type="text" placeholder="Search images..." class="w-full px-3 py-2 border rounded" />
+        <input x-model="query" @input.debounce.500ms="searchImages()" type="text" placeholder="Search images..." class="w-full px-3 py-2 border rounded" />
         <div class="mt-4 grid grid-cols-3 gap-2">
           <template x-for="img in images" :key="img.id">
-            <div class="border rounded overflow-hidden"><img :src="img.src" alt="" class="object-cover h-24 w-full" /></div>
+            <div class="border rounded overflow-hidden">
+              <img :src="img.src" alt="" class="object-cover h-24 w-full" />
+              <div class="text-xs p-1 truncate" x-text="img.title"></div>
+            </div>
           </template>
         </div>
       </div>
+      <!-- Video Tab -->
       <div x-show="tab==='video'">
-        <input x-model="query" @keydown.enter="searchVideos()" type="text" placeholder="Search videos..." class="w-full px-3 py-2 border rounded" />
-        <div class="mt-4 grid grid-cols-1 gap-4">
+        <input x-model="query" @input.debounce.500ms="searchVideos()" type="text" placeholder="Search videos..." class="w-full px-3 py-2 border rounded" />
+        <div class="mt-4 space-y-2">
           <template x-for="vid in videos" :key="vid.id">
-            <div class="border rounded overflow-hidden"><video :src="vid.src" controls class="w-full h-32"></video></div>
+            <div class="border rounded px-3 py-2 truncate" x-text="vid.title"></div>
           </template>
         </div>
       </div>
+      <!-- Upload Tab -->
       <div x-show="tab==='upload'">
         <div class="card p-0 overflow-hidden"><div id="drag-drop-area"></div></div>
       </div>
     </div>
   </div>
 
+  <!-- Libraries -->
   <script src="https://releases.transloadit.com/uppy/v4.13.3/uppy.min.js"></script>
   <script src="https://releases.transloadit.com/uppy/locales/v3.3.1/da_DK.min.js"></script>
+
   <script>
-    window.UPLOAD_API_KEY = 'whateverkey';
-    window.REGION = 'east';
-    window.USER = 'sope@tv2reg.dk';
-    const photographers = [
-      { id: '8c92f1c8-4eee-4d0b-8a76-c405d713d05d', title: 'søren' },
-      { id: '1323e293-b4b3-4ec1-bc69-a7f2168508aa', title: 'michael' },
-      { id: '1c3b017f-5c3a-445a-a37c-e71e3fa96673', title: 'morten' },
-      { id: '9bb4aab2-3bc2-45d3-9986-469e5e7695be', title: 'lisa' },
-      { id: '11b14d02-9629-4e8e-b35e-9a29ad69b5a0', title: 'marianne' },
-      { id: 'd105dc17-b1d0-4ca6-b156-6b4b11ecd020', title: 'ritzau' }
-    ];
+    const TYPESENSE_HOST = 'typesense-typesense-dashboard.0edfhx.easypanel.host';
+    const TYPESENSE_API_KEY = 'R4W1LPnsHo7zmfE8riAdtPlOkA1hPohI';
 
     function mediaDialog() {
       return {
-        tab: 'image', query: '', images: [], videos: [], active: 'border-b-2 border-blue-500 text-blue-600', uppyInitialized: false,
+        tab: 'image', query: '', images: [], videos: [], active: 'border-b-2 border-blue-500 text-blue-600',
+        typesense: null, uppyInitialized: false,
         init() {
-          this.searchImages(); this.searchVideos();
-          this.$watch('tab', val => {
-            if (val==='upload' && !this.uppyInitialized) { this.initUppy(); this.uppyInitialized=true; }
+          // init Typesense client
+          this.typesense = new Typesense.Client({
+            nodes: [{ host: TYPESENSE_HOST, port: '443', protocol: 'https' }],
+            apiKey: TYPESENSE_API_KEY,
+            connectionTimeoutSeconds: 2,
           });
+          // initial fetch
+          this.searchImages(); this.searchVideos();
+          // watch tab for Uppy init
+          this.$watch('tab', val => {
+            if (val==='upload' && !this.uppyInitialized) { this.initUppy(); this.uppyInitialized = true; }
+          });
+        },
+        async searchImages() {
+          if (!this.query) { this.images = []; return; }
+          try {
+            const res = await this.typesense.collections('images').documents().search({ q: this.query, query_by: 'title' });
+            this.images = res.hits.map(h => ({ id: h.document.id, title: h.document.title, src: `https://placehold.co/150?text=${encodeURIComponent(h.document.title)}` }));
+          } catch (e) { this.images = []; }
+        },
+        async searchVideos() {
+          if (!this.query) { this.videos = []; return; }
+          try {
+            const res = await this.typesense.collections('videos').documents().search({ q: this.query, query_by: 'title' });
+            this.videos = res.hits.map(h => ({ id: h.document.id, title: h.document.title }));
+          } catch (e) { this.videos = []; }
         },
         initUppy() {
           const uppy = new Uppy.Uppy({ restrictions:{ requiredMetaFields:['title','caption'] }, meta:{ title:'',caption:'',photographer:'',region:window.REGION,user:window.USER }, locale:Uppy.locales.da_DK })
             .use(Uppy.Compressor)
-            .use(Uppy.Dashboard, { inline:true, target:'#drag-drop-area', showProgressDetails:true, proudlyDisplayPoweredByUppy:false, width:'100%', metaFields:[ {id:'title',name:'Titel',placeholder:'Indtast titel'}, {id:'caption',name:'Billedtekst',placeholder:'Indtast billedtekst'}, {id:'photographer',name:'Fotograf',render:({value,onChange,fieldCSSClasses},h)=>h('select',{class:fieldCSSClasses.text,value,name:'photographer',onChange:e=>onChange(e.target.value),'data-uppy-super-focusable':true},[h('option',{value:''},'Vælg fotograf'),...photographers.map(p=>h('option',{value:p.id,selected:p.id===value},p.title))]) } ] })
+            .use(Uppy.Dashboard, { inline:true, target:'#drag-drop-area', showProgressDetails:true, proudlyDisplayPoweredByUppy:false, metaFields:[ {id:'title',name:'Titel',placeholder:'Indtast titel'}, {id:'caption',name:'Billedtekst',placeholder:'Indtast billedtekst'}, {id:'photographer',name:'Fotograf',render:({value,onChange,fieldCSSClasses},h)=>h('select',{class:fieldCSSClasses.text,value,name:'photographer',onChange:e=>onChange(e.target.value),'data-uppy-super-focusable':true},[h('option',{value:''},'Vælg fotograf'),...[{id:'8c...',title:'søren'},/*...*/].map(p=>h('option',{value:p.id,selected:p.id===value},p.title))]) } ] })
             .use(Uppy.AwsS3, { endpoint:'https://tools-uppy.nwrasl.easypanel.host/', headers:{ 'X-Upload-Key':window.UPLOAD_API_KEY }});
-          uppy.on('complete', result=>console.log('Upload fuldført! Resultater:',result));
-        },
-        searchImages() { this.images=Array.from({length:9},(_,i)=>({id:i,src:`https://placehold.co/150?text=Img+${i+1}`})); },
-        searchVideos() { this.videos=Array.from({length:3},(_,i)=>({id:i,src:`https://www.w3schools.com/html/mov_bbb.mp4#t=${i}`})); }
+          uppy.on('complete', result=>console.log('Upload fuldført! Resultater:', result));
+        }
       }
     }
-    document.addEventListener('alpine:init',()=>Alpine.data('mediaDialog',mediaDialog));
+    document.addEventListener('alpine:init', () => Alpine.data('mediaDialog', mediaDialog));
   </script>
 </body>
 </html>
